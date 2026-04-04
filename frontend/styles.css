@@ -2,9 +2,9 @@
 :root {
     /* Colors */
     --bg-primary: #FFFFFF;
-    --bg-secondary: #EFE0C0;
-    --bg-card: rgba(239, 224, 192, 0.88);
-    --bg-input: rgba(239, 224, 192, 0.94);
+    --bg-secondary: #FFF8F5;
+    --bg-card: #FFF8F5;
+    --bg-input: #FFF8F5;
     --bg-hover: rgba(216, 138, 115, 0.12);
 
     --text-primary: #261404;
@@ -24,8 +24,8 @@
     --sometimes-color: #B76552;
     --sometimes-glow: rgba(242, 180, 154, 0.22);
 
-    --border-subtle: rgba(216, 138, 115, 0.18);
-    --border-active: rgba(216, 138, 115, 0.52);
+    --border-subtle: rgba(0, 0, 0, 0.05);
+    --border-active: #D88A73;
 
     /* Typography */
     --font-main: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -401,7 +401,7 @@ body {
 .text-input {
     flex: 1;
     padding: 12px 18px;
-    border: 1px solid var(--border-subtle);
+    border: 1px solid rgba(216, 138, 115, 0.25);
     border-radius: var(--radius-md);
     background: var(--bg-input);
     color: var(--text-primary);
@@ -412,7 +412,7 @@ body {
 }
 
 .text-input::placeholder { color: var(--text-muted); }
-.text-input:focus { border-color: var(--border-active); box-shadow: 0 0 0 3px var(--accent-glow); }
+.text-input:focus { border-color: var(--border-active); box-shadow: none; }
 
 .btn-send {
     width: 46px;
@@ -570,7 +570,8 @@ body {
     flex-direction: column;
     gap: 0;
     margin-top: 6px;
-    border: 1px solid var(--border-subtle);
+    border: 1px solid rgba(216, 138, 115, 0.2);
+    background: var(--bg-input);
     border-radius: var(--radius-sm);
     overflow: hidden;
 }
@@ -617,7 +618,7 @@ body {
 .form-group select {
     width: 100%;
     padding: 10px 14px;
-    border: 1px solid var(--border-subtle);
+    border: 1px solid rgba(216, 138, 115, 0.25);
     border-radius: var(--radius-sm);
     background: var(--bg-input);
     color: var(--text-primary);
@@ -630,6 +631,7 @@ body {
 .form-group input:focus,
 .form-group select:focus {
     border-color: var(--border-active);
+    box-shadow: none;
 }
 
 .form-group select {
@@ -662,11 +664,11 @@ body {
     transition: all var(--transition-fast);
 }
 
-.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 20px var(--accent-glow); }
+.btn-primary:hover { transform: translateY(-1px); background: linear-gradient(135deg, #F2B49A, #D88A73); box-shadow: 0 4px 20px var(--accent-glow); }
 .btn-primary:active { transform: translateY(0); }
 
 #profile-modal .modal-content {
-    background: #FFFFFF;
+    background: #FFF8F5;
 }
 
 #profile-modal .form-group label,
@@ -677,16 +679,16 @@ body {
 #profile-modal .form-group input,
 #profile-modal .form-group select,
 #profile-modal .checkbox-group {
-    background: #EFE0C0;
+    background: #FFF8F5;
     color: #261404;
-    border-color: rgba(216, 138, 115, 0.24);
+    border-color: rgba(216, 138, 115, 0.25);
     transition: background-color 250ms ease-in-out, border-color 250ms ease-in-out, color 250ms ease-in-out;
 }
 
 #profile-modal .form-group input:focus,
 #profile-modal .form-group select:focus {
-    border-color: rgba(216, 138, 115, 0.52);
-    box-shadow: 0 0 0 3px rgba(216, 138, 115, 0.15);
+    border-color: #D88A73;
+    box-shadow: none;
 }
 
 #profile-modal .btn-primary {
