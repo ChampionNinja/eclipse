@@ -667,37 +667,70 @@ body {
 .btn-primary:hover { transform: translateY(-1px); background: linear-gradient(135deg, #F2B49A, #D88A73); box-shadow: 0 4px 20px var(--accent-glow); }
 .btn-primary:active { transform: translateY(0); }
 
+#profile-modal {
+    --profile-form-bg: #FFF8F5;
+    --profile-form-surface: #FFF8F5;
+    --profile-form-text: #261404;
+    --profile-form-border: rgba(216, 138, 115, 0.25);
+    --profile-form-focus: #D88A73;
+    --profile-form-button: linear-gradient(135deg, #D88A73, #B76552);
+    --profile-form-button-hover: linear-gradient(135deg, #F2B49A, #D88A73);
+    --profile-checkbox-border: rgba(216, 138, 115, 0.2);
+}
+
+#profile-modal.female-theme {
+    --profile-form-bg: #FFF3F0;
+    --profile-form-surface: #FFE4DE;
+    --profile-form-text: #3A1A1A;
+    --profile-form-border: rgba(209, 106, 122, 0.25);
+    --profile-form-focus: #D16A7A;
+    --profile-form-button: linear-gradient(135deg, #D16A7A, #A94A5A);
+    --profile-form-button-hover: linear-gradient(135deg, #F2B4A0, #D16A7A);
+    --profile-checkbox-border: rgba(209, 106, 122, 0.2);
+}
+
 #profile-modal .modal-content {
-    background: #FFF8F5;
+    background: var(--profile-form-bg);
+    transition: background-color 280ms ease-in-out, color 280ms ease-in-out, border-color 280ms ease-in-out;
 }
 
 #profile-modal .form-group label,
 #profile-modal .modal-header h2 {
-    color: #261404;
+    color: var(--profile-form-text);
+    transition: color 280ms ease-in-out;
 }
 
 #profile-modal .form-group input,
 #profile-modal .form-group select,
 #profile-modal .checkbox-group {
-    background: #FFF8F5;
-    color: #261404;
-    border-color: rgba(216, 138, 115, 0.25);
-    transition: background-color 250ms ease-in-out, border-color 250ms ease-in-out, color 250ms ease-in-out;
+    background: var(--profile-form-surface);
+    color: var(--profile-form-text);
+    border-color: var(--profile-form-border);
+    transition: background-color 280ms ease-in-out, border-color 280ms ease-in-out, color 280ms ease-in-out;
+}
+
+#profile-modal .checkbox-group {
+    border-color: var(--profile-checkbox-border);
+}
+
+#profile-modal .checkbox-label {
+    color: var(--profile-form-text);
+    transition: background-color 280ms ease-in-out, color 280ms ease-in-out, border-color 280ms ease-in-out;
 }
 
 #profile-modal .form-group input:focus,
 #profile-modal .form-group select:focus {
-    border-color: #D88A73;
+    border-color: var(--profile-form-focus);
     box-shadow: none;
 }
 
 #profile-modal .btn-primary {
-    background: linear-gradient(135deg, #D88A73, #B76552);
-    transition: background 250ms ease-in-out, box-shadow 250ms ease-in-out, transform var(--transition-fast);
+    background: var(--profile-form-button);
+    transition: background-color 280ms ease-in-out, color 280ms ease-in-out, border-color 280ms ease-in-out;
 }
 
 #profile-modal .btn-primary:hover {
-    background: linear-gradient(135deg, #F2B49A, #D88A73);
+    background: var(--profile-form-button-hover);
 }
 
 .barcode-input {
