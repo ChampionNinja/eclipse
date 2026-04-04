@@ -665,6 +665,39 @@ body {
 .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 20px var(--accent-glow); }
 .btn-primary:active { transform: translateY(0); }
 
+#profile-modal .modal-content {
+    background: #FFFFFF;
+}
+
+#profile-modal .form-group label,
+#profile-modal .modal-header h2 {
+    color: #261404;
+}
+
+#profile-modal .form-group input,
+#profile-modal .form-group select,
+#profile-modal .checkbox-group {
+    background: #EFE0C0;
+    color: #261404;
+    border-color: rgba(216, 138, 115, 0.24);
+    transition: background-color 250ms ease-in-out, border-color 250ms ease-in-out, color 250ms ease-in-out;
+}
+
+#profile-modal .form-group input:focus,
+#profile-modal .form-group select:focus {
+    border-color: rgba(216, 138, 115, 0.52);
+    box-shadow: 0 0 0 3px rgba(216, 138, 115, 0.15);
+}
+
+#profile-modal .btn-primary {
+    background: linear-gradient(135deg, #D88A73, #B76552);
+    transition: background 250ms ease-in-out, box-shadow 250ms ease-in-out, transform var(--transition-fast);
+}
+
+#profile-modal .btn-primary:hover {
+    background: linear-gradient(135deg, #F2B49A, #D88A73);
+}
+
 .barcode-input {
     text-align: center;
     font-family: var(--font-mono);
