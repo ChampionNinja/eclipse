@@ -1,7 +1,7 @@
 /* ===== DESIGN TOKENS ===== */
 :root {
     /* Colors */
-    --bg-primary: #F7EDD8;
+    --bg-primary: #FFFFFF;
     --bg-secondary: #EFE0C0;
     --bg-card: rgba(239, 224, 192, 0.88);
     --bg-input: rgba(239, 224, 192, 0.94);
@@ -94,7 +94,7 @@ body {
     padding: 16px 28px;
     border-bottom: 1px solid var(--border-subtle);
     backdrop-filter: blur(20px);
-    background: rgba(247, 237, 216, 0.82);
+    background: rgba(255, 255, 255, 0.82);
     position: sticky;
     top: 0;
     z-index: 100;
@@ -375,7 +375,7 @@ body {
 
 .chat-message.user .message-bubble {
     background: var(--accent-primary);
-    color: #F7EDD8;
+    color: #FFFFFF;
     border-bottom-right-radius: 4px;
 }
 
@@ -420,7 +420,7 @@ body {
     border: none;
     border-radius: var(--radius-md);
     background: linear-gradient(135deg, #D88A73, #B76552);
-    color: #F7EDD8;
+    color: #FFFFFF;
     box-shadow: 0 8px 20px rgba(216, 138, 115, 0.3);
     cursor: pointer;
     display: flex;
@@ -654,7 +654,7 @@ body {
     border: none;
     border-radius: var(--radius-md);
     background: var(--accent-gradient);
-    color: #F7EDD8;
+    color: #FFFFFF;
     font-family: var(--font-main);
     font-size: 0.9rem;
     font-weight: 600;
