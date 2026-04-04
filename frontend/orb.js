@@ -46,8 +46,8 @@ class NutriOrb {
         this.material = new THREE.ShaderMaterial({
             uniforms: {
                 uTime: { value: 0 },
-                uColor1: { value: new THREE.Color(0.949, 0.706, 0.604) }, // #F2B49A highlight center
-                uColor2: { value: new THREE.Color(0.847, 0.541, 0.451) }, // #D88A73 accent mid gradient
+                uColor1: { value: new THREE.Color(0.949, 0.706, 0.604) }, // #F2B49A center
+                uColor2: { value: new THREE.Color(0.91, 0.604, 0.498) },  // #E89A7F inner
                 uNoiseScale: { value: 0.3 },
                 uGlowIntensity: { value: 0.6 },
             },
@@ -131,6 +131,7 @@ class NutriOrb {
                 varying float vDisplacement;
 
                 void main() {
+                    vec3 midColor = vec3(0.847, 0.541, 0.451);   // #D88A73
                     vec3 outerColor = vec3(0.718, 0.396, 0.322); // #B76552
                     vec3 fadeColor = vec3(0.969, 0.929, 0.847);  // #F7EDD8
 
@@ -138,18 +139,24 @@ class NutriOrb {
                     vec3 viewDir = normalize(cameraPosition - vPosition);
                     float fresnel = pow(1.0 - max(dot(viewDir, vNormal), 0.0), 2.5);
 
-                    // Color mix based on displacement
+                    // Color mix based on displacement and center depth
                     float mixFactor = clamp(vDisplacement * 1.6 + 0.5, 0.0, 1.0);
-                    vec3 coreToMid = mix(uColor1, uColor2, mixFactor);
-                    vec3 baseColor = mix(coreToMid, outerColor, clamp(fresnel * 0.75, 0.0, 1.0));
+                    float centerDepth = clamp(1.0 - fresnel * 1.35, 0.0, 1.0);
+                    vec3 coreToInner = mix(uColor1, uColor2, mixFactor);
+                    vec3 innerToMid = mix(coreToInner, midColor, clamp(mixFactor * 0.85, 0.0, 1.0));
+                    vec3 baseColor = mix(innerToMid, outerColor, clamp(fresnel * 0.82, 0.0, 1.0));
+                    baseColor = mix(baseColor, uColor1, centerDepth * 0.28);
 
                     // Add subtle animation color shift
                     float shift = sin(uTime * 0.5) * 0.02;
                     baseColor += shift;
 
-                    // Rim glow
-                    vec3 glowColor = vec3(0.949, 0.706, 0.604);
-                    vec3 finalColor = baseColor + fresnel * glowColor * (uGlowIntensity * 0.28);
+                    // Rim + inner glow
+                    vec3 outerGlow = vec3(0.949, 0.706, 0.604); // #F2B49A
+                    vec3 innerGlow = vec3(0.847, 0.541, 0.451); // #D88A73
+                    vec3 finalColor = baseColor
+                        + fresnel * outerGlow * (uGlowIntensity * 0.26)
+                        + centerDepth * innerGlow * 0.14;
 
                     // Inner ambient
                     float ambient = 0.10;
@@ -196,9 +203,9 @@ class NutriOrb {
             this.currentColor.r, this.currentColor.g, this.currentColor.b
         );
         this.material.uniforms.uColor2.value.setRGB(
-            0.847,
-            0.541,
-            0.451
+            0.91,
+            0.604,
+            0.498
         );
 
         // Smooth noise scale
