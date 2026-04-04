@@ -79,11 +79,13 @@ function loadProfile() {
             els.inputDiet.value = profile.diet_type || '';
             els.inputGender.value = profile.gender || '';
             renderConditions(profile.gender || '');
+            applyProfileTheme(profile.gender || '');
             restoreCheckboxes('allergy', profile.allergies || []);
             restoreCheckboxes('condition', profile.conditions || []);
             return;
         }
         renderConditions('');
+        applyProfileTheme('');
     } catch (e) {
         console.warn('Could not load profile:', e);
     }
@@ -103,6 +105,11 @@ function renderConditions(gender) {
     ).join('');
 
     restoreCheckboxes('condition', state.userProfile.conditions || []);
+}
+
+function applyProfileTheme(gender) {
+    if (!els.profileModal) return;
+    els.profileModal.classList.toggle('female-theme', gender === 'female');
 }
 
 function restoreCheckboxes(name, savedValues) {
@@ -162,6 +169,7 @@ function bindEvents() {
     els.btnSaveProfile.addEventListener('click', saveProfile);
     els.inputGender.addEventListener('change', (e) => {
         renderConditions(e.target.value);
+        applyProfileTheme(e.target.value);
     });
 
     // Modal backdrop close
