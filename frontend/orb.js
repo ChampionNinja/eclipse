@@ -7,7 +7,7 @@ class NutriOrb {
     constructor(canvasId) {
         this.canvas = document.getElementById(canvasId);
         this.state = 'idle'; // idle | listening | processing | eat | avoid | sometimes
-        this.targetColor = { r: 0.937, g: 0.624, b: 0.153 }; // inner core
+        this.targetColor = { r: 0.949, g: 0.706, b: 0.604 }; // inner core
         this.currentColor = { ...this.targetColor };
         this.time = 0;
         this.noiseScale = 0.3;
@@ -46,8 +46,8 @@ class NutriOrb {
         this.material = new THREE.ShaderMaterial({
             uniforms: {
                 uTime: { value: 0 },
-                uColor1: { value: new THREE.Color(0.937, 0.624, 0.153) }, // #EF9F27 highlight center
-                uColor2: { value: new THREE.Color(0.522, 0.310, 0.043) }, // #854F0B accent mid gradient
+                uColor1: { value: new THREE.Color(0.949, 0.706, 0.604) }, // #F2B49A highlight center
+                uColor2: { value: new THREE.Color(0.847, 0.541, 0.451) }, // #D88A73 accent mid gradient
                 uNoiseScale: { value: 0.3 },
                 uGlowIntensity: { value: 0.6 },
             },
@@ -131,7 +131,7 @@ class NutriOrb {
                 varying float vDisplacement;
 
                 void main() {
-                    vec3 outerColor = vec3(0.522, 0.310, 0.043); // #854F0B
+                    vec3 outerColor = vec3(0.718, 0.396, 0.322); // #B76552
                     vec3 fadeColor = vec3(0.969, 0.929, 0.847);  // #F7EDD8
 
                     // Fresnel edge glow
@@ -148,7 +148,7 @@ class NutriOrb {
                     baseColor += shift;
 
                     // Rim glow
-                    vec3 glowColor = vec3(0.937, 0.624, 0.153);
+                    vec3 glowColor = vec3(0.949, 0.706, 0.604);
                     vec3 finalColor = baseColor + fresnel * glowColor * (uGlowIntensity * 0.28);
 
                     // Inner ambient
@@ -196,9 +196,9 @@ class NutriOrb {
             this.currentColor.r, this.currentColor.g, this.currentColor.b
         );
         this.material.uniforms.uColor2.value.setRGB(
-            0.522,
-            0.310,
-            0.043
+            0.847,
+            0.541,
+            0.451
         );
 
         // Smooth noise scale
@@ -221,42 +221,42 @@ class NutriOrb {
 
         switch (state) {
             case 'idle':
-                this.targetColor = { r: 0.937, g: 0.624, b: 0.153 };
+                this.targetColor = { r: 0.949, g: 0.706, b: 0.604 };
                 this.targetNoiseScale = 0.3;
                 this.material.uniforms.uGlowIntensity.value = 0.6;
                 statusText.textContent = 'Ready to assist';
                 break;
 
             case 'listening':
-                this.targetColor = { r: 0.937, g: 0.624, b: 0.153 };
+                this.targetColor = { r: 0.949, g: 0.706, b: 0.604 };
                 this.targetNoiseScale = 0.6;
                 this.material.uniforms.uGlowIntensity.value = 0.8;
                 statusText.textContent = 'Listening...';
                 break;
 
             case 'processing':
-                this.targetColor = { r: 0.522, g: 0.310, b: 0.043 };
+                this.targetColor = { r: 0.847, g: 0.541, b: 0.451 };
                 this.targetNoiseScale = 0.8;
                 this.material.uniforms.uGlowIntensity.value = 0.75;
                 statusText.textContent = 'Analyzing...';
                 break;
 
             case 'eat':
-                this.targetColor = { r: 0.937, g: 0.624, b: 0.153 };
+                this.targetColor = { r: 0.949, g: 0.706, b: 0.604 };
                 this.targetNoiseScale = 0.25;
                 this.material.uniforms.uGlowIntensity.value = 0.62;
                 statusText.textContent = 'Good choice!';
                 break;
 
             case 'avoid':
-                this.targetColor = { r: 0.937, g: 0.624, b: 0.153 };
+                this.targetColor = { r: 0.949, g: 0.706, b: 0.604 };
                 this.targetNoiseScale = 0.5;
                 this.material.uniforms.uGlowIntensity.value = 0.68;
                 statusText.textContent = 'Not recommended';
                 break;
 
             case 'sometimes':
-                this.targetColor = { r: 0.522, g: 0.310, b: 0.043 };
+                this.targetColor = { r: 0.847, g: 0.541, b: 0.451 };
                 this.targetNoiseScale = 0.35;
                 this.material.uniforms.uGlowIntensity.value = 0.58;
                 statusText.textContent = 'In moderation';
