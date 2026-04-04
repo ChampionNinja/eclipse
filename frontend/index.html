@@ -111,35 +111,60 @@
                     <button id="btn-close-profile" class="modal-close">&times;</button>
                 </div>
                 <div class="modal-body">
+
+                    <!-- Q1: Name -->
                     <div class="form-group">
-                        <label for="input-allergies">Allergies</label>
-                        <input type="text" id="input-allergies" placeholder="e.g., lactose, tree nuts, gluten" />
-                        <span class="form-hint">Comma-separated</span>
+                        <label for="input-name">Name</label>
+                        <input type="text" id="input-name" placeholder="e.g., Aisha" />
                     </div>
+
+                    <!-- Q2: Age -->
                     <div class="form-group">
-                        <label for="input-conditions">Health Conditions</label>
-                        <input type="text" id="input-conditions" placeholder="e.g., diabetes, hypertension" />
-                        <span class="form-hint">Comma-separated</span>
+                        <label for="input-age">Age</label>
+                        <input type="number" id="input-age" placeholder="e.g., 25" min="1" max="120" />
                     </div>
+
+                    <!-- Q3: Dietary Preferences -->
                     <div class="form-group">
-                        <label for="input-diet">Diet Type</label>
+                        <label for="input-diet">Dietary Preferences</label>
                         <select id="input-diet">
                             <option value="">None</option>
                             <option value="vegetarian">Vegetarian</option>
-                            <option value="vegan">Vegan</option>
-                            <option value="keto">Keto</option>
-                            <option value="paleo">Paleo</option>
+                            <option value="non-vegetarian">Non-Vegetarian</option>
                         </select>
                     </div>
+
+                    <!-- Q4: Gender -->
                     <div class="form-group">
-                        <label for="input-goal">Goal</label>
-                        <select id="input-goal">
-                            <option value="">None</option>
-                            <option value="weight_loss">Weight Loss</option>
-                            <option value="muscle_gain">Muscle Gain</option>
-                            <option value="maintenance">Maintenance</option>
+                        <label for="input-gender">Gender</label>
+                        <select id="input-gender">
+                            <option value="">Select</option>
+                            <option value="male">Male</option>
+                            <option value="female">Female</option>
+                            <option value="prefer-not-to-say">Prefer not to say</option>
                         </select>
                     </div>
+
+                    <!-- Q5: Allergies (multi-select checkboxes) -->
+                    <div class="form-group">
+                        <label>Allergies</label>
+                        <div class="checkbox-group" id="allergy-options">
+                            <label class="checkbox-label"><span>Peanut Allergy</span><input type="checkbox" name="allergy" value="peanut"></label>
+                            <label class="checkbox-label"><span>Lactose Intolerance</span><input type="checkbox" name="allergy" value="lactose"></label>
+                            <label class="checkbox-label"><span>Gluten Allergy</span><input type="checkbox" name="allergy" value="gluten"></label>
+                            <label class="checkbox-label"><span>Fish Allergy</span><input type="checkbox" name="allergy" value="fish"></label>
+                            <label class="checkbox-label"><span>Soy Allergy</span><input type="checkbox" name="allergy" value="soy"></label>
+                        </div>
+                    </div>
+
+                    <!-- Q6: Health Conditions (dynamic based on gender, multi-select checkboxes) -->
+                    <div class="form-group">
+                        <label>Health Conditions</label>
+                        <div class="checkbox-group" id="condition-options">
+                            <!-- Injected dynamically by JS based on gender selection -->
+                        </div>
+                    </div>
+
                     <button id="btn-save-profile" class="btn-primary">Save Profile</button>
                 </div>
             </div>
