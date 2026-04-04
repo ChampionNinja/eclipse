@@ -1,0 +1,51 @@
+# NutriAssist — Oumi Training Config for Qwen2.5-0.5B
+# Target: Google Colab Free Tier (T4 GPU, 16GB VRAM)
+# Dataset: Oumi conversations JSONL format
+
+model:
+  model_name: "Qwen/Qwen2.5-0.5B-Instruct"
+  torch_dtype_str: "bfloat16"
+  trust_remote_code: true
+  attn_implementation: "flash_attention_2"  # faster on T4; falls back to sdpa if unavailable
+
+data:
+  train:
+    datasets:
+      - dataset_name: "text_sft"
+        dataset_path: "/content/data/training_data.jsonl"
+    collator_name: "text_causal_language_modeling"
+    streaming: false
+
+training:
+  output_dir: "/content/nutriassist-model"
+  trainer_type: "TRL_SFT"
+  num_train_epochs: 3
+  per_device_train_batch_size: 4
+  gradient_accumulation_steps: 4
+  learning_rate: 2.0e-4
+  warmup_steps: 50
+  logging_steps: 10
+  save_strategy: "epoch"
+  lr_scheduler_type: "cosine"
+  max_grad_norm: 0.3
+  optim: "paged_adamw_8bit"
+  fp16: false
+  bf16: true
+  use_peft: true
+  max_seq_length: 512
+
+peft:
+  peft_method: "lora"
+  lora_r: 16
+  lora_alpha: 32
+  lora_dropout: 0.05
+  lora_target_modules:
+    - "q_proj"
+    - "k_proj"
+    - "v_proj"
+    - "o_proj"
+    - "gate_proj"
+    - "up_proj"
+    - "down_proj"
+  q_lora: true
+  q_lora_bits: 4
