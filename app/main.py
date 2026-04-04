@@ -4,6 +4,7 @@ Run:
     uvicorn app.main:app --reload --port 8000
 """
 
+import os
 import re
 import time
 import uuid
@@ -47,12 +48,21 @@ async def lifespan(app: FastAPI):
     logger.info("Starting NutriAssist...")
 
     # Load INDB food database
-    food_resolver = FoodResolver("data/Anuvaad_INDB_2024.11.xlsx")
+    project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    excel_path = os.path.join(project_root, "data", "Anuvaad_INDB_2024.11.xlsx")
+    food_resolver = FoodResolver(excel_path)
     logger.info(f"Food resolver: {food_resolver.get_food_count()} foods loaded")
 
-    # Load SLM analyzer (falls back to rules if no model)
-    analyzer = SLMAnalyzer(model_path=None)  # Set path when model is ready
-    logger.info("Analyzer ready (rule-based mode)")
+    # Load SLM analyzer (falls back to rules if model not found)
+    adapter_path = os.path.join(
+        project_root, "nutriassist-adapter", "content", "nutriassist-model"
+    )
+    if os.path.isdir(adapter_path):
+        analyzer = SLMAnalyzer(model_path=adapter_path)
+        logger.info(f"Analyzer ready (SLM mode: {adapter_path})")
+    else:
+        analyzer = SLMAnalyzer(model_path=None)
+        logger.info("Analyzer ready (rule-based fallback — adapter not found)")
 
     yield
 
