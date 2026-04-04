@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="NutriAssist — Your AI-powered voice food assistant. Scan, ask, and get instant nutritional verdicts.">
+    <title>NutriAssist — AI Food Assistant</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="app">
+        <!-- Ambient background -->
+        <div class="ambient-bg"></div>
+
+        <!-- Header -->
+        <header id="main-header">
+            <div class="header-left">
+                <div class="logo-mark"></div>
+                <h1>Nutri<span class="accent">Assist</span></h1>
+            </div>
+            <nav class="header-nav">
+                <button id="btn-profile" class="nav-btn" title="Profile Settings">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    <span>Profile</span>
+                </button>
+                <button id="btn-history" class="nav-btn" title="History">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="10"/></svg>
+                    <span>History</span>
+                </button>
+            </nav>
+        </header>
+
+        <!-- Main Content -->
+        <main id="main-content">
+            <!-- 3D Orb Section -->
+            <section id="orb-section">
+                <canvas id="orb-canvas"></canvas>
+                <div id="orb-status" class="orb-status">
+                    <span class="status-dot"></span>
+                    <span class="status-text">Ready to assist</span>
+                </div>
+            </section>
+
+            <!-- Interaction Area -->
+            <section id="interaction-section">
+                <!-- Response Card -->
+                <div id="response-card" class="response-card hidden">
+                    <div class="card-header">
+                        <span id="response-product-name" class="product-name"></span>
+                        <span id="response-badge" class="verdict-badge"></span>
+                    </div>
+                    <p id="response-reason" class="response-reason"></p>
+                    <div id="response-confidence" class="confidence-bar-container">
+                        <div class="confidence-label">
+                            <span>Confidence</span>
+                            <span id="confidence-value">0%</span>
+                        </div>
+                        <div class="confidence-track">
+                            <div id="confidence-fill" class="confidence-fill"></div>
+                        </div>
+                    </div>
+                    <div id="response-source" class="response-source"></div>
+                </div>
+
+                <!-- Chat History -->
+                <div id="chat-history" class="chat-history">
+                    <div class="chat-message assistant">
+                        <div class="message-bubble">
+                            Hey! I'm <strong>NutriAssist</strong>. Ask me about any food, or scan a barcode — I'll tell you if it's good for you! 🥗
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Input Area -->
+                <div id="input-area" class="input-area">
+                    <div class="input-wrapper">
+                        <input
+                            type="text"
+                            id="text-input"
+                            class="text-input"
+                            placeholder="Ask about a food... (e.g., 'is oatmeal healthy?')"
+                            autocomplete="off"
+                        />
+                        <button id="btn-send" class="btn-send" title="Send">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                        </button>
+                    </div>
+                    <div class="input-actions">
+                        <button id="btn-mic" class="action-btn mic-btn" title="Voice Input">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+                            <span>Voice</span>
+                        </button>
+                        <button id="btn-barcode" class="action-btn barcode-btn" title="Scan Barcode">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 5h2v14H3zM7 5h1v14H7zM11 5h2v14h-2zM15 5h1v14h-1zM19 5h2v14h-2z"/></svg>
+                            <span>Barcode</span>
+                        </button>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Profile Modal -->
+        <div id="profile-modal" class="modal hidden">
+            <div class="modal-backdrop"></div>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Your Profile</h2>
+                    <button id="btn-close-profile" class="modal-close">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="input-allergies">Allergies</label>
+                        <input type="text" id="input-allergies" placeholder="e.g., lactose, tree nuts, gluten" />
+                        <span class="form-hint">Comma-separated</span>
+                    </div>
+                    <div class="form-group">
+                        <label for="input-conditions">Health Conditions</label>
+                        <input type="text" id="input-conditions" placeholder="e.g., diabetes, hypertension" />
+                        <span class="form-hint">Comma-separated</span>
+                    </div>
+                    <div class="form-group">
+                        <label for="input-diet">Diet Type</label>
+                        <select id="input-diet">
+                            <option value="">None</option>
+                            <option value="vegetarian">Vegetarian</option>
+                            <option value="vegan">Vegan</option>
+                            <option value="keto">Keto</option>
+                            <option value="paleo">Paleo</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="input-goal">Goal</label>
+                        <select id="input-goal">
+                            <option value="">None</option>
+                            <option value="weight_loss">Weight Loss</option>
+                            <option value="muscle_gain">Muscle Gain</option>
+                            <option value="maintenance">Maintenance</option>
+                        </select>
+                    </div>
+                    <button id="btn-save-profile" class="btn-primary">Save Profile</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Barcode Modal -->
+        <div id="barcode-modal" class="modal hidden">
+            <div class="modal-backdrop"></div>
+            <div class="modal-content barcode-modal-content">
+                <div class="modal-header">
+                    <h2>Enter Barcode</h2>
+                    <button id="btn-close-barcode" class="modal-close">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <input type="text" id="input-barcode" class="barcode-input" placeholder="Enter 8-13 digit barcode" maxlength="13" />
+                    <button id="btn-submit-barcode" class="btn-primary">Analyze Product</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="orb.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
