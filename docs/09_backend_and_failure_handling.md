@@ -19,7 +19,7 @@ nutriassist2/
 │   │   ├── intent.py         # RulesLayer + KeywordRouter
 │   │   ├── barcode.py        # OFFClient
 │   │   ├── resolver.py       # FoodResolver
-│   │   ├── analyzer.py       # NutriAssistInference (SLM)
+│   │   ├── analyzer.py       # BiteAIInference (SLM)
 │   │   ├── smart_router.py   # SLM skip logic
 │   │   └── response.py       # Response formatter
 │   └── data/
@@ -48,12 +48,12 @@ from typing import Optional
 from app.services.intent import RulesLayer, KeywordRouter
 from app.services.barcode import OFFClient
 from app.services.resolver import FoodResolver
-from app.services.analyzer import NutriAssistInference
+from app.services.analyzer import BiteAIInference
 from app.services.smart_router import SmartRouter
 from app.services.response import ResponseFormatter
 from app.models.session import ConversationSession
 
-app = FastAPI(title="NutriAssist", version="1.0.0")
+app = FastAPI(title="Bite.ai", version="1.0.0")
 
 app.add_middleware(
     CORSMiddleware,
@@ -67,7 +67,7 @@ rules_layer = RulesLayer()
 keyword_router = KeywordRouter()
 off_client = OFFClient()
 food_resolver = FoodResolver()
-analyzer = NutriAssistInference(
+analyzer = BiteAIInference(
     base_model="Qwen/Qwen2.5-0.5B-Instruct",
     adapter_path="./nutriassist-model-final"
 )
@@ -237,7 +237,7 @@ async def health():
 # --- Startup ---
 @app.on_event("startup")
 async def startup():
-    print("NutriAssist API starting...")
+    print("Bite.ai API starting...")
     # Pre-warm the model with a dummy inference
     analyzer.analyze(
         {"product_name": "test", "nutriments": {}, "source_type": "inferred",
@@ -258,7 +258,7 @@ class ResponseFormatter:
     }
     
     CASUAL_RESPONSES = {
-        "greeting": "Hey! I'm NutriAssist. Tell me a food or scan a barcode, and I'll analyze it for you!",
+        "greeting": "Hey! I'm Bite.ai. Tell me a food or scan a barcode, and I'll analyze it for you!",
         "thanks": "You're welcome! Ask me about any other food anytime.",
         "generic": "I help you make smart food choices! Try asking about a food or scanning a barcode.",
     }

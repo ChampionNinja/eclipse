@@ -1,5 +1,5 @@
 /**
- * NutriAssist — Main Application Logic
+ * Bite.ai — Main Application Logic
  * Handles UI interactions, API calls, session, and profile management.
  */
 
@@ -9,10 +9,12 @@ const API_BASE = 'http://localhost:8000'; // Change for Colab: ngrok URL
 const state = {
     sessionId: null,
     userProfile: {
+        name: '',
+        age: '',
+        gender: '',
+        diet_type: '',
         allergies: [],
         conditions: [],
-        diet_type: '',
-        goal: '',
     },
     isRecording: false,
     currentProduct: null,
@@ -41,10 +43,12 @@ const els = {
     profileModal: $('#profile-modal'),
     btnCloseProfile: $('#btn-close-profile'),
     btnSaveProfile: $('#btn-save-profile'),
-    inputAllergies: $('#input-allergies'),
-    inputConditions: $('#input-conditions'),
+    inputName: $('#input-name'),
+    inputAge: $('#input-age'),
+    inputGender: $('#input-gender'),
     inputDiet: $('#input-diet'),
-    inputGoal: $('#input-goal'),
+    allergyOptions: $('#allergy-options'),
+    conditionOptions: $('#condition-options'),
     // Barcode modal
     barcodeModal: $('#barcode-modal'),
     btnCloseBarcode: $('#btn-close-barcode'),
@@ -70,26 +74,62 @@ function loadProfile() {
         if (saved) {
             const profile = JSON.parse(saved);
             state.userProfile = { ...state.userProfile, ...profile };
-            // Populate form
-            els.inputAllergies.value = (profile.allergies || []).join(', ');
-            els.inputConditions.value = (profile.conditions || []).join(', ');
+            els.inputName.value = profile.name || '';
+            els.inputAge.value = profile.age || '';
             els.inputDiet.value = profile.diet_type || '';
-            els.inputGoal.value = profile.goal || '';
+            els.inputGender.value = profile.gender || '';
+            renderConditions(profile.gender || '');
+            applyProfileTheme(profile.gender || '');
+            restoreCheckboxes('allergy', profile.allergies || []);
+            restoreCheckboxes('condition', profile.conditions || []);
+            return;
         }
+        renderConditions('');
+        applyProfileTheme('');
     } catch (e) {
         console.warn('Could not load profile:', e);
     }
 }
 
-function saveProfile() {
-    const allergies = els.inputAllergies.value
-        .split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
-    const conditions = els.inputConditions.value
-        .split(',').map(s => s.trim().toLowerCase()).filter(Boolean);
-    const diet_type = els.inputDiet.value;
-    const goal = els.inputGoal.value;
+function renderConditions(gender) {
+    const container = els.conditionOptions;
+    const baseConditions = ['Diabetes', 'Hypertension', 'High Cholesterol'];
+    const femaleConditions = ['PCOS', 'Menopause', 'Diabetes', 'Hypertension', 'High Cholesterol'];
+    const list = gender === 'female' ? femaleConditions : baseConditions;
 
-    state.userProfile = { allergies, conditions, diet_type, goal };
+    container.innerHTML = list.map(c =>
+        `<label class="checkbox-label">
+      <span>${c}</span>
+      <input type="checkbox" name="condition" value="${c.toLowerCase().replace(/\s/g, '_')}">
+    </label>`
+    ).join('');
+
+    restoreCheckboxes('condition', state.userProfile.conditions || []);
+}
+
+function applyProfileTheme(gender) {
+    if (!els.profileModal) return;
+    els.profileModal.classList.toggle('female-theme', gender === 'female');
+}
+
+function restoreCheckboxes(name, savedValues) {
+    document.querySelectorAll(`input[name="${name}"]`).forEach(cb => {
+        cb.checked = savedValues.includes(cb.value);
+    });
+}
+
+function saveProfile() {
+    const name = els.inputName.value.trim();
+    const age = els.inputAge.value.trim();
+    const diet_type = els.inputDiet.value;
+    const gender = els.inputGender.value;
+
+    const allergies = [...document.querySelectorAll('input[name="allergy"]:checked')]
+        .map(cb => cb.value);
+    const conditions = [...document.querySelectorAll('input[name="condition"]:checked')]
+        .map(cb => cb.value);
+
+    state.userProfile = { name, age, gender, diet_type, allergies, conditions };
 
     try {
         localStorage.setItem('nutriassist_profile', JSON.stringify(state.userProfile));
@@ -98,7 +138,7 @@ function saveProfile() {
     }
 
     closeModal(els.profileModal);
-    addMessage('assistant', `Profile updated! ${allergies.length ? 'Allergies: ' + allergies.join(', ') + '. ' : ''}I'll keep these in mind for all analyses.`);
+    addMessage('assistant', `Profile updated! ${name ? 'Hi ' + name + '! ' : ''}${allergies.length ? 'Allergies noted: ' + allergies.join(', ') + '. ' : ''}I'll keep your preferences in mind.`);
 }
 
 // ===== EVENTS =====
@@ -127,6 +167,10 @@ function bindEvents() {
     els.btnProfile.addEventListener('click', () => openModal(els.profileModal));
     els.btnCloseProfile.addEventListener('click', () => closeModal(els.profileModal));
     els.btnSaveProfile.addEventListener('click', saveProfile);
+    els.inputGender.addEventListener('change', (e) => {
+        renderConditions(e.target.value);
+        applyProfileTheme(e.target.value);
+    });
 
     // Modal backdrop close
     $$('.modal-backdrop').forEach(backdrop => {
@@ -356,7 +400,7 @@ function handleDemoResponse(text) {
             product_name: 'Demo Product',
             intent: 'barcode',
             verdict: { verdict: 'sometimes', reason: 'Demo mode — connect backend for real analysis', confidence: 0.5 },
-            response_text: 'Demo mode: Connect the NutriAssist backend for real barcode analysis!',
+            response_text: 'Demo mode: Connect the Bite.ai backend for real barcode analysis!',
             latency_ms: 100,
         };
     } else if (textLower.includes('hello') || textLower.includes('hi') || textLower.includes('hey')) {

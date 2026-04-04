@@ -1,5 +1,5 @@
 /**
- * NutriAssist — 3D Orb (Three.js)
+ * Bite.ai — 3D Orb (Three.js)
  * Interactive animated orb that responds to system state.
  */
 
@@ -7,7 +7,7 @@ class NutriOrb {
     constructor(canvasId) {
         this.canvas = document.getElementById(canvasId);
         this.state = 'idle'; // idle | listening | processing | eat | avoid | sometimes
-        this.targetColor = { r: 0.42, g: 0.36, b: 0.91 }; // accent purple
+        this.targetColor = { r: 0.949, g: 0.706, b: 0.604 }; // inner core
         this.currentColor = { ...this.targetColor };
         this.time = 0;
         this.noiseScale = 0.3;
@@ -46,8 +46,8 @@ class NutriOrb {
         this.material = new THREE.ShaderMaterial({
             uniforms: {
                 uTime: { value: 0 },
-                uColor1: { value: new THREE.Color(0.42, 0.36, 0.91) },
-                uColor2: { value: new THREE.Color(0.66, 0.33, 0.97) },
+                uColor1: { value: new THREE.Color(0.949, 0.706, 0.604) }, // #F2B49A center
+                uColor2: { value: new THREE.Color(0.91, 0.604, 0.498) },  // #E89A7F inner
                 uNoiseScale: { value: 0.3 },
                 uGlowIntensity: { value: 0.6 },
             },
@@ -131,27 +131,41 @@ class NutriOrb {
                 varying float vDisplacement;
 
                 void main() {
+                    vec3 midColor = vec3(0.847, 0.541, 0.451);   // #D88A73
+                    vec3 outerColor = vec3(0.718, 0.396, 0.322); // #B76552
+                    vec3 fadeColor = vec3(0.969, 0.929, 0.847);  // #F7EDD8
+
                     // Fresnel edge glow
                     vec3 viewDir = normalize(cameraPosition - vPosition);
                     float fresnel = pow(1.0 - max(dot(viewDir, vNormal), 0.0), 2.5);
 
-                    // Color mix based on displacement
-                    float mixFactor = vDisplacement * 2.0 + 0.5;
-                    vec3 baseColor = mix(uColor1, uColor2, clamp(mixFactor, 0.0, 1.0));
+                    // Color mix based on displacement and center depth
+                    float mixFactor = clamp(vDisplacement * 1.6 + 0.5, 0.0, 1.0);
+                    float centerDepth = clamp(1.0 - fresnel * 1.35, 0.0, 1.0);
+                    vec3 coreToInner = mix(uColor1, uColor2, mixFactor);
+                    vec3 innerToMid = mix(coreToInner, midColor, clamp(mixFactor * 0.85, 0.0, 1.0));
+                    vec3 baseColor = mix(innerToMid, outerColor, clamp(fresnel * 0.82, 0.0, 1.0));
+                    baseColor = mix(baseColor, uColor1, centerDepth * 0.28);
 
                     // Add subtle animation color shift
-                    float shift = sin(uTime * 0.5) * 0.1;
+                    float shift = sin(uTime * 0.5) * 0.02;
                     baseColor += shift;
 
-                    // Rim glow
-                    vec3 glowColor = mix(baseColor, vec3(1.0), 0.5);
-                    vec3 finalColor = baseColor + fresnel * glowColor * uGlowIntensity;
+                    // Rim + inner glow
+                    vec3 outerGlow = vec3(0.949, 0.706, 0.604); // #F2B49A
+                    vec3 innerGlow = vec3(0.847, 0.541, 0.451); // #D88A73
+                    vec3 finalColor = baseColor
+                        + fresnel * outerGlow * (uGlowIntensity * 0.26)
+                        + centerDepth * innerGlow * 0.14;
 
                     // Inner ambient
-                    float ambient = 0.15;
+                    float ambient = 0.10;
                     finalColor += ambient * baseColor;
 
-                    gl_FragColor = vec4(finalColor, 0.92 - fresnel * 0.1);
+                    // Fade toward background tone at edges
+                    finalColor = mix(finalColor, fadeColor, clamp(fresnel * 0.35, 0.0, 1.0));
+
+                    gl_FragColor = vec4(finalColor, 0.90 - fresnel * 0.14);
                 }
             `,
             transparent: true,
@@ -189,9 +203,9 @@ class NutriOrb {
             this.currentColor.r, this.currentColor.g, this.currentColor.b
         );
         this.material.uniforms.uColor2.value.setRGB(
-            this.currentColor.r * 1.4,
-            this.currentColor.g * 0.8,
-            this.currentColor.b * 1.1
+            0.91,
+            0.604,
+            0.498
         );
 
         // Smooth noise scale
@@ -214,44 +228,44 @@ class NutriOrb {
 
         switch (state) {
             case 'idle':
-                this.targetColor = { r: 0.42, g: 0.36, b: 0.91 };
+                this.targetColor = { r: 0.949, g: 0.706, b: 0.604 };
                 this.targetNoiseScale = 0.3;
                 this.material.uniforms.uGlowIntensity.value = 0.6;
                 statusText.textContent = 'Ready to assist';
                 break;
 
             case 'listening':
-                this.targetColor = { r: 0.42, g: 0.36, b: 0.91 };
+                this.targetColor = { r: 0.949, g: 0.706, b: 0.604 };
                 this.targetNoiseScale = 0.6;
-                this.material.uniforms.uGlowIntensity.value = 1.0;
+                this.material.uniforms.uGlowIntensity.value = 0.8;
                 statusText.textContent = 'Listening...';
                 break;
 
             case 'processing':
-                this.targetColor = { r: 1.0, g: 0.75, b: 0.28 };
+                this.targetColor = { r: 0.847, g: 0.541, b: 0.451 };
                 this.targetNoiseScale = 0.8;
-                this.material.uniforms.uGlowIntensity.value = 0.9;
+                this.material.uniforms.uGlowIntensity.value = 0.75;
                 statusText.textContent = 'Analyzing...';
                 break;
 
             case 'eat':
-                this.targetColor = { r: 0.0, g: 0.84, b: 0.56 };
+                this.targetColor = { r: 0.949, g: 0.706, b: 0.604 };
                 this.targetNoiseScale = 0.25;
-                this.material.uniforms.uGlowIntensity.value = 0.7;
+                this.material.uniforms.uGlowIntensity.value = 0.62;
                 statusText.textContent = 'Good choice!';
                 break;
 
             case 'avoid':
-                this.targetColor = { r: 1.0, g: 0.42, b: 0.42 };
+                this.targetColor = { r: 0.949, g: 0.706, b: 0.604 };
                 this.targetNoiseScale = 0.5;
-                this.material.uniforms.uGlowIntensity.value = 0.8;
+                this.material.uniforms.uGlowIntensity.value = 0.68;
                 statusText.textContent = 'Not recommended';
                 break;
 
             case 'sometimes':
-                this.targetColor = { r: 1.0, g: 0.75, b: 0.28 };
+                this.targetColor = { r: 0.847, g: 0.541, b: 0.451 };
                 this.targetNoiseScale = 0.35;
-                this.material.uniforms.uGlowIntensity.value = 0.65;
+                this.material.uniforms.uGlowIntensity.value = 0.58;
                 statusText.textContent = 'In moderation';
                 break;
         }
