@@ -54,6 +54,11 @@ const els = {
     btnCloseBarcode: $('#btn-close-barcode'),
     btnSubmitBarcode: $('#btn-submit-barcode'),
     inputBarcode: $('#input-barcode'),
+    tabCamera: $('#tab-camera'),
+    tabManual: $('#tab-manual'),
+    barcodeCameraPanel: $('#barcode-camera-panel'),
+    barcodeManualPanel: $('#barcode-manual-panel'),
+    barcodeReader: $('#barcode-reader'),
 };
 
 // ===== INIT =====
@@ -155,12 +160,21 @@ function bindEvents() {
     // Voice
     els.btnMic.addEventListener('click', toggleVoice);
 
-    // Barcode
-    els.btnBarcode.addEventListener('click', () => openModal(els.barcodeModal));
-    els.btnCloseBarcode.addEventListener('click', () => closeModal(els.barcodeModal));
+    // Barcode — open modal with camera
+    els.btnBarcode.addEventListener('click', openBarcodeModal);
+    els.btnCloseBarcode.addEventListener('click', closeBarcodeModal);
     els.btnSubmitBarcode.addEventListener('click', handleBarcode);
     els.inputBarcode.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') handleBarcode();
+    });
+
+    // Barcode tabs
+    els.tabCamera.addEventListener('click', () => switchBarcodeTab('camera'));
+    els.tabManual.addEventListener('click', () => switchBarcodeTab('manual'));
+
+    // Barcode input — digits only
+    els.inputBarcode.addEventListener('input', (e) => {
+        e.target.value = e.target.value.replace(/\D/g, '').slice(0, 13);
     });
 
     // Profile
@@ -175,13 +189,13 @@ function bindEvents() {
     // Modal backdrop close
     $$('.modal-backdrop').forEach(backdrop => {
         backdrop.addEventListener('click', () => {
-            closeModal(backdrop.parentElement);
+            const modal = backdrop.parentElement;
+            if (modal === els.barcodeModal) {
+                closeBarcodeModal();
+            } else {
+                closeModal(modal);
+            }
         });
-    });
-
-    // Barcode input — digits only
-    els.inputBarcode.addEventListener('input', (e) => {
-        e.target.value = e.target.value.replace(/\D/g, '').slice(0, 13);
     });
 }
 
@@ -207,7 +221,105 @@ async function handleSend() {
     }
 }
 
-// ===== BARCODE =====
+// ===== BARCODE SCANNER =====
+let html5QrCode = null;
+let scannerRunning = false;
+
+function openBarcodeModal() {
+    openModal(els.barcodeModal);
+    switchBarcodeTab('camera');
+}
+
+function closeBarcodeModal() {
+    stopScanner();
+    closeModal(els.barcodeModal);
+}
+
+function switchBarcodeTab(tab) {
+    if (tab === 'camera') {
+        els.tabCamera.classList.add('active');
+        els.tabManual.classList.remove('active');
+        els.barcodeCameraPanel.classList.remove('hidden');
+        els.barcodeManualPanel.classList.add('hidden');
+        startScanner();
+    } else {
+        els.tabCamera.classList.remove('active');
+        els.tabManual.classList.add('active');
+        els.barcodeCameraPanel.classList.add('hidden');
+        els.barcodeManualPanel.classList.remove('hidden');
+        stopScanner();
+        setTimeout(() => els.inputBarcode.focus(), 100);
+    }
+}
+
+async function startScanner() {
+    if (scannerRunning || !window.Html5Qrcode) return;
+
+    try {
+        html5QrCode = new Html5Qrcode('barcode-reader');
+
+        const config = {
+            fps: 10,
+            qrbox: { width: 280, height: 120 },
+            formatsToSupport: [
+                Html5QrcodeSupportedFormats.EAN_13,
+                Html5QrcodeSupportedFormats.EAN_8,
+                Html5QrcodeSupportedFormats.UPC_A,
+                Html5QrcodeSupportedFormats.UPC_E,
+                Html5QrcodeSupportedFormats.CODE_128,
+                Html5QrcodeSupportedFormats.CODE_39,
+            ],
+        };
+
+        await html5QrCode.start(
+            { facingMode: 'environment' },
+            config,
+            onScanSuccess,
+            () => {} // ignore scan failures (no barcode in frame)
+        );
+        scannerRunning = true;
+    } catch (err) {
+        console.warn('Camera scanner error:', err);
+        // Show hint to user
+        const hint = els.barcodeCameraPanel.querySelector('.barcode-hint');
+        if (hint) {
+            hint.textContent = 'Camera not available — use manual entry';
+            hint.style.color = 'var(--avoid-color, #e74c3c)';
+        }
+        // Auto-switch to manual tab
+        setTimeout(() => switchBarcodeTab('manual'), 1500);
+    }
+}
+
+async function stopScanner() {
+    if (html5QrCode && scannerRunning) {
+        try {
+            await html5QrCode.stop();
+        } catch (e) { /* ignore */ }
+        scannerRunning = false;
+    }
+}
+
+function onScanSuccess(decodedText) {
+    // Vibrate if supported
+    if (navigator.vibrate) navigator.vibrate(200);
+
+    // Stop scanner immediately
+    stopScanner();
+    closeBarcodeModal();
+
+    // Process the scanned barcode
+    addMessage('user', `📷 Scanned barcode: ${decodedText}`);
+    if (nutriOrb) nutriOrb.setState('processing');
+
+    sendQuery(`scan ${decodedText}`)
+        .then(result => handleResponse(result))
+        .catch(err => {
+            addMessage('assistant', 'Couldn\'t connect to the server. Running demo analysis...');
+            handleDemoResponse(`scan ${decodedText}`);
+        });
+}
+
 async function handleBarcode() {
     const barcode = els.inputBarcode.value.trim();
     if (!barcode || barcode.length < 8) {
@@ -216,7 +328,7 @@ async function handleBarcode() {
         return;
     }
 
-    closeModal(els.barcodeModal);
+    closeBarcodeModal();
     els.inputBarcode.value = '';
 
     addMessage('user', `Scan barcode: ${barcode}`);

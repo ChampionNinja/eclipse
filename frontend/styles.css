@@ -744,6 +744,78 @@ body {
     background: var(--profile-form-button-hover);
 }
 
+/* ===== BARCODE SCANNER ===== */
+.barcode-tabs {
+    display: flex;
+    gap: 0;
+    margin-bottom: 16px;
+    border: 1px solid rgba(216, 138, 115, 0.25);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+}
+
+.barcode-tab {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 10px;
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    font-family: var(--font-main);
+    font-size: 0.82rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.barcode-tab:first-child {
+    border-right: 1px solid rgba(216, 138, 115, 0.15);
+}
+
+.barcode-tab.active {
+    background: var(--accent-glow);
+    color: var(--accent-primary);
+    font-weight: 600;
+}
+
+.barcode-tab:hover:not(.active) {
+    background: var(--bg-hover);
+    color: var(--text-secondary);
+}
+
+.barcode-panel {
+    animation: modalContentIn 0.25s var(--ease-out);
+}
+
+.barcode-reader {
+    width: 100%;
+    min-height: 250px;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    background: #1a1a1a;
+    border: 2px solid rgba(216, 138, 115, 0.3);
+}
+
+/* Override html5-qrcode internal styles */
+.barcode-reader video {
+    border-radius: var(--radius-md);
+}
+
+.barcode-reader #qr-shaded-region {
+    border-color: var(--accent-primary) !important;
+}
+
+.barcode-hint {
+    text-align: center;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    margin-top: 10px;
+    font-weight: 500;
+}
+
 .barcode-input {
     text-align: center;
     font-family: var(--font-mono);

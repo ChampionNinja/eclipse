@@ -175,18 +175,40 @@
             <div class="modal-backdrop"></div>
             <div class="modal-content barcode-modal-content">
                 <div class="modal-header">
-                    <h2>Enter Barcode</h2>
+                    <h2>Scan Barcode</h2>
                     <button id="btn-close-barcode" class="modal-close">&times;</button>
                 </div>
                 <div class="modal-body">
-                    <input type="text" id="input-barcode" class="barcode-input" placeholder="Enter 8-13 digit barcode" maxlength="13" />
-                    <button id="btn-submit-barcode" class="btn-primary">Analyze Product</button>
+                    <!-- Tab toggle -->
+                    <div class="barcode-tabs">
+                        <button id="tab-camera" class="barcode-tab active" data-tab="camera">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                            Camera
+                        </button>
+                        <button id="tab-manual" class="barcode-tab" data-tab="manual">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                            Type
+                        </button>
+                    </div>
+
+                    <!-- Camera scanner -->
+                    <div id="barcode-camera-panel" class="barcode-panel">
+                        <div id="barcode-reader" class="barcode-reader"></div>
+                        <p class="barcode-hint">Point your camera at a barcode</p>
+                    </div>
+
+                    <!-- Manual entry -->
+                    <div id="barcode-manual-panel" class="barcode-panel hidden">
+                        <input type="text" id="input-barcode" class="barcode-input" placeholder="Enter 8-13 digit barcode" maxlength="13" />
+                        <button id="btn-submit-barcode" class="btn-primary">Analyze Product</button>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
     <script src="orb.js"></script>
     <script src="app.js"></script>
 </body>

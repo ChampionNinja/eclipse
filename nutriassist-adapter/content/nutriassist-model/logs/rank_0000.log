@@ -1,0 +1,53 @@
+[2026-04-04 16:50:13,119][oumi][rank0][pid:6104][MainThread][INFO]][train.py:324] Training config saved to /content/nutriassist-model/telemetry/training_config.yaml
+[2026-04-04 16:50:16,241][oumi][rank0][pid:6104][MainThread][INFO]][models.py:499] Using the model's built-in chat template for model 'Qwen/Qwen2.5-0.5B-Instruct'.
+[2026-04-04 16:51:00,815][oumi][rank0][pid:6303][MainThread][INFO]][train.py:324] Training config saved to /content/nutriassist-model/telemetry/training_config.yaml
+[2026-04-04 16:51:02,596][oumi][rank0][pid:6303][MainThread][INFO]][models.py:499] Using the model's built-in chat template for model 'Qwen/Qwen2.5-0.5B-Instruct'.
+[2026-04-04 16:52:21,877][oumi][rank0][pid:6725][MainThread][INFO]][train.py:324] Training config saved to /content/nutriassist-model/telemetry/training_config.yaml
+[2026-04-04 16:52:23,454][oumi][rank0][pid:6725][MainThread][INFO]][models.py:499] Using the model's built-in chat template for model 'Qwen/Qwen2.5-0.5B-Instruct'.
+[2026-04-04 16:56:26,647][oumi][rank0][pid:7817][MainThread][INFO]][train.py:324] Training config saved to /content/nutriassist-model/telemetry/training_config.yaml
+[2026-04-04 16:56:28,225][oumi][rank0][pid:7817][MainThread][INFO]][models.py:499] Using the model's built-in chat template for model 'Qwen/Qwen2.5-0.5B-Instruct'.
+[2026-04-04 17:01:22,937][oumi][rank0][pid:5116][MainThread][INFO]][train.py:324] Training config saved to /content/nutriassist-model/telemetry/training_config.yaml
+[2026-04-04 17:01:24,473][oumi][rank0][pid:5116][MainThread][INFO]][models.py:499] Using the model's built-in chat template for model 'Qwen/Qwen2.5-0.5B-Instruct'.
+[2026-04-04 17:02:39,660][oumi][rank0][pid:5116][MainThread][INFO]][torch_utils.py:80] Torch version: 2.8.0+cu128. NumPy version: 1.26.4
+[2026-04-04 17:02:39,661][oumi][rank0][pid:5116][MainThread][INFO]][torch_utils.py:88] CUDA version: 12.8 
+[2026-04-04 17:02:39,662][oumi][rank0][pid:5116][MainThread][INFO]][torch_utils.py:91] CuDNN version: 91.0.2
+[2026-04-04 17:02:39,664][oumi][rank0][pid:5116][MainThread][INFO]][torch_utils.py:124] CPU cores: 2 CUDA devices: 1
+device(0)='Tesla T4' Capability: (7, 5) Memory: [Total: 14.56GiB Free: 13.7GiB Allocated: 0.43GiB Cached: 0.74GiB]
+[2026-04-04 17:02:39,665][oumi][rank0][pid:5116][MainThread][INFO]][train.py:153] Oumi version: 0.7
+[2026-04-04 17:02:39,687][oumi][rank0][pid:5116][MainThread][INFO]][train.py:324] Training config saved to /content/nutriassist-model/telemetry/training_config.yaml
+[2026-04-04 17:02:40,962][oumi][rank0][pid:5116][MainThread][INFO]][models.py:499] Using the model's built-in chat template for model 'Qwen/Qwen2.5-0.5B-Instruct'.
+[2026-04-04 17:04:56,084][oumi][rank0][pid:5116][MainThread][INFO]][torch_utils.py:80] Torch version: 2.8.0+cu128. NumPy version: 1.26.4
+[2026-04-04 17:04:56,085][oumi][rank0][pid:5116][MainThread][INFO]][torch_utils.py:88] CUDA version: 12.8 
+[2026-04-04 17:04:56,086][oumi][rank0][pid:5116][MainThread][INFO]][torch_utils.py:91] CuDNN version: 91.0.2
+[2026-04-04 17:04:56,087][oumi][rank0][pid:5116][MainThread][INFO]][torch_utils.py:124] CPU cores: 2 CUDA devices: 1
+device(0)='Tesla T4' Capability: (7, 5) Memory: [Total: 14.56GiB Free: 13.7GiB Allocated: 0.43GiB Cached: 0.74GiB]
+[2026-04-04 17:04:56,088][oumi][rank0][pid:5116][MainThread][INFO]][train.py:153] Oumi version: 0.7
+[2026-04-04 17:04:56,124][oumi][rank0][pid:5116][MainThread][INFO]][train.py:324] Training config saved to /content/nutriassist-model/telemetry/training_config.yaml
+[2026-04-04 17:04:57,393][oumi][rank0][pid:5116][MainThread][INFO]][models.py:499] Using the model's built-in chat template for model 'Qwen/Qwen2.5-0.5B-Instruct'.
+[2026-04-04 17:04:57,418][oumi][rank0][pid:5116][MainThread][INFO]][base_map_dataset.py:92] Creating map dataset (type: TextSftJsonLinesDataset)... dataset_name: 'text_sft'
+[2026-04-04 17:04:57,670][oumi][rank0][pid:5116][MainThread][INFO]][base_map_dataset.py:313] TextSftJsonLinesDataset: features=dict_keys(['input_ids', 'attention_mask'])
+[2026-04-04 17:04:58,580][oumi][rank0][pid:5116][MainThread][INFO]][base_map_dataset.py:377] Finished transforming dataset (TextSftJsonLinesDataset)! Speed: 550.50 examples/sec. Examples: 500. Duration: 0.9 sec. Transform workers: 1.
+[2026-04-04 17:04:58,585][oumi][rank0][pid:5116][MainThread][INFO]][models.py:287] Building model using device_map: auto (DeviceRankInfo(world_size=1, rank=0, local_world_size=1, local_rank=0))...
+[2026-04-04 17:04:58,819][oumi][rank0][pid:5116][MainThread][INFO]][models.py:363] Using model class: <class 'transformers.models.auto.modeling_auto.AutoModelForCausalLM'> to instantiate model.
+[2026-04-04 17:04:59,778][oumi][rank0][pid:5116][MainThread][INFO]][train.py:469] Building PEFT model...
+[2026-04-04 17:05:00,041][oumi][rank0][pid:5116][MainThread][INFO]][torch_utils.py:288] 
+Model Parameters Summary:
+🔢 Total     parameters: 502,830,976
+🔗 Embedding parameters: 136,134,656
+🎯 Trainable parameters: 8,798,208
+🔒 Frozen    parameters: 494,032,768 (98.25%)
+
+[2026-04-04 17:05:00,043][oumi][rank0][pid:5116][MainThread][INFO]][train.py:492] Skipping dataset preparation for TRL_SFT trainer since the dataset is already processed.
+[2026-04-04 17:05:00,665][oumi][rank0][pid:5116][MainThread][INFO]][torch_profiler_utils.py:163] PROF: Torch Profiler disabled!
+[2026-04-04 17:05:00,728][oumi][rank0][pid:5116][MainThread][INFO]][device_utils.py:343] GPU Metrics Before Training: GPU runtime info: NVidiaGpuRuntimeInfo(device_index=0, device_count=1, used_memory_mb=1992.0, temperature=72, fan_speed=None, fan_speeds=None, power_usage_watts=32.916000000000004, power_limit_watts=70.0, gpu_utilization=0, memory_utilization=0, performance_state=0, clock_speed_graphics=585, clock_speed_sm=585, clock_speed_memory=5000).
+[2026-04-04 17:05:00,729][oumi][rank0][pid:5116][MainThread][INFO]][train.py:564] Training init time: 4.646s
+[2026-04-04 17:05:00,730][oumi][rank0][pid:5116][MainThread][INFO]][train.py:565] Starting training... (TrainerType.TRL_SFT, transformers: 4.57.6)
+[2026-04-04 17:26:56,357][oumi][rank0][pid:5116][MainThread][INFO]][train.py:572] Training is Complete.
+[2026-04-04 17:26:56,367][oumi][rank0][pid:5116][MainThread][INFO]][device_utils.py:343] GPU Metrics After Training: GPU runtime info: NVidiaGpuRuntimeInfo(device_index=0, device_count=1, used_memory_mb=8004.0, temperature=75, fan_speed=None, fan_speeds=None, power_usage_watts=45.735, power_limit_watts=70.0, gpu_utilization=0, memory_utilization=0, performance_state=0, clock_speed_graphics=1590, clock_speed_sm=1590, clock_speed_memory=5000).
+[2026-04-04 17:26:56,368][oumi][rank0][pid:5116][MainThread][INFO]][torch_utils.py:135] Peak GPU memory usage: 5.05 GB
+[2026-04-04 17:26:56,369][oumi][rank0][pid:5116][MainThread][INFO]][train.py:579] Saving final state...
+[2026-04-04 17:26:56,370][oumi][rank0][pid:5116][MainThread][INFO]][train.py:584] Saving final model...
+[2026-04-04 17:26:57,116][oumi][rank0][pid:5116][MainThread][INFO]][hf_trainer.py:127] Model has been saved at /content/nutriassist-model
+[2026-04-04 17:26:57,117][oumi][rank0][pid:5116][MainThread][INFO]][train.py:236] 
+
+» We're always looking for feedback. What's one thing we can improve? https://oumi.ai/feedback
