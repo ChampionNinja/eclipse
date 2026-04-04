@@ -1,5 +1,5 @@
 /**
- * NutriAssist — Main Application Logic
+ * Bite.ai — Main Application Logic
  * Handles UI interactions, API calls, session, and profile management.
  */
 
@@ -400,7 +400,7 @@ function handleDemoResponse(text) {
             product_name: 'Demo Product',
             intent: 'barcode',
             verdict: { verdict: 'sometimes', reason: 'Demo mode — connect backend for real analysis', confidence: 0.5 },
-            response_text: 'Demo mode: Connect the NutriAssist backend for real barcode analysis!',
+            response_text: 'Demo mode: Connect the Bite.ai backend for real barcode analysis!',
             latency_ms: 100,
         };
     } else if (textLower.includes('hello') || textLower.includes('hi') || textLower.includes('hey')) {

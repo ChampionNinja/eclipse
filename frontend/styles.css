@@ -134,6 +134,17 @@ body {
     background-clip: text;
 }
 
+.brand-bite {
+    background: linear-gradient(135deg, #D88A73, #B76552);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.brand-ai {
+    color: #F2B49A;
+}
+
 .header-nav {
     display: flex;
     gap: 6px;
