@@ -7,7 +7,7 @@ class NutriOrb {
     constructor(canvasId) {
         this.canvas = document.getElementById(canvasId);
         this.state = 'idle'; // idle | listening | processing | eat | avoid | sometimes
-        this.targetColor = { r: 0.42, g: 0.36, b: 0.91 }; // accent purple
+        this.targetColor = { r: 0.831, g: 0.565, b: 0.039 }; // accent amber
         this.currentColor = { ...this.targetColor };
         this.time = 0;
         this.noiseScale = 0.3;
@@ -46,8 +46,8 @@ class NutriOrb {
         this.material = new THREE.ShaderMaterial({
             uniforms: {
                 uTime: { value: 0 },
-                uColor1: { value: new THREE.Color(0.42, 0.36, 0.91) },
-                uColor2: { value: new THREE.Color(0.66, 0.33, 0.97) },
+                uColor1: { value: new THREE.Color(0.831, 0.565, 0.039) },
+                uColor2: { value: new THREE.Color(0.98, 0.78, 0.46) },
                 uNoiseScale: { value: 0.3 },
                 uGlowIntensity: { value: 0.6 },
             },
@@ -189,9 +189,9 @@ class NutriOrb {
             this.currentColor.r, this.currentColor.g, this.currentColor.b
         );
         this.material.uniforms.uColor2.value.setRGB(
-            this.currentColor.r * 1.4,
-            this.currentColor.g * 0.8,
-            this.currentColor.b * 1.1
+            0.98,
+            0.78,
+            0.46
         );
 
         // Smooth noise scale
@@ -214,42 +214,42 @@ class NutriOrb {
 
         switch (state) {
             case 'idle':
-                this.targetColor = { r: 0.42, g: 0.36, b: 0.91 };
+                this.targetColor = { r: 0.831, g: 0.565, b: 0.039 };
                 this.targetNoiseScale = 0.3;
                 this.material.uniforms.uGlowIntensity.value = 0.6;
                 statusText.textContent = 'Ready to assist';
                 break;
 
             case 'listening':
-                this.targetColor = { r: 0.42, g: 0.36, b: 0.91 };
+                this.targetColor = { r: 0.831, g: 0.565, b: 0.039 };
                 this.targetNoiseScale = 0.6;
                 this.material.uniforms.uGlowIntensity.value = 1.0;
                 statusText.textContent = 'Listening...';
                 break;
 
             case 'processing':
-                this.targetColor = { r: 1.0, g: 0.75, b: 0.28 };
+                this.targetColor = { r: 0.98, g: 0.78, b: 0.46 };
                 this.targetNoiseScale = 0.8;
                 this.material.uniforms.uGlowIntensity.value = 0.9;
                 statusText.textContent = 'Analyzing...';
                 break;
 
             case 'eat':
-                this.targetColor = { r: 0.0, g: 0.84, b: 0.56 };
+                this.targetColor = { r: 0.831, g: 0.565, b: 0.039 };
                 this.targetNoiseScale = 0.25;
                 this.material.uniforms.uGlowIntensity.value = 0.7;
                 statusText.textContent = 'Good choice!';
                 break;
 
             case 'avoid':
-                this.targetColor = { r: 1.0, g: 0.42, b: 0.42 };
+                this.targetColor = { r: 0.92, g: 0.7, b: 0.27 };
                 this.targetNoiseScale = 0.5;
                 this.material.uniforms.uGlowIntensity.value = 0.8;
                 statusText.textContent = 'Not recommended';
                 break;
 
             case 'sometimes':
-                this.targetColor = { r: 1.0, g: 0.75, b: 0.28 };
+                this.targetColor = { r: 0.98, g: 0.78, b: 0.46 };
                 this.targetNoiseScale = 0.35;
                 this.material.uniforms.uGlowIntensity.value = 0.65;
                 statusText.textContent = 'In moderation';
