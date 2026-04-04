@@ -185,7 +185,7 @@ import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from peft import PeftModel
 
-class NutriAssistInference:
+class BiteAIInference:
     def __init__(self, base_model: str, adapter_path: str):
         self.tokenizer = AutoTokenizer.from_pretrained(base_model)
         
@@ -289,7 +289,7 @@ Goal: {user_profile.get('goal', 'none')}
 
 
 # Usage
-engine = NutriAssistInference(
+engine = BiteAIInference(
     base_model="Qwen/Qwen2.5-0.5B-Instruct",
     adapter_path="./nutriassist-model-final"
 )

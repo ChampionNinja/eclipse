@@ -1,5 +1,5 @@
 /**
- * NutriAssist — 3D Orb (Three.js)
+ * Bite.ai — 3D Orb (Three.js)
  * Interactive animated orb that responds to system state.
  */
 
