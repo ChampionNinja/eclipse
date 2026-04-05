@@ -268,6 +268,13 @@ class NutriOrb {
                 this.material.uniforms.uGlowIntensity.value = 0.58;
                 statusText.textContent = 'In moderation';
                 break;
+
+            case 'speaking':
+                this.targetColor = { r: 0.949, g: 0.706, b: 0.604 };
+                this.targetNoiseScale = 0.45;
+                this.material.uniforms.uGlowIntensity.value = 0.85;
+                statusText.textContent = 'Speaking...';
+                break;
         }
     }
 }

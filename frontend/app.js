@@ -3,7 +3,7 @@
  * Handles UI interactions, API calls, session, and profile management.
  */
 
-const API_BASE = 'http://localhost:8000'; // Change for Colab: ngrok URL
+const API_BASE = `${window.location.protocol}//${window.location.host}`;
 
 // ===== STATE =====
 const state = {
@@ -17,6 +17,8 @@ const state = {
         conditions: [],
     },
     isRecording: false,
+    voiceCallMode: false,  // continuous voice call
+    isSpeaking: false,
     currentProduct: null,
 };
 
@@ -66,6 +68,12 @@ document.addEventListener('DOMContentLoaded', () => {
     loadProfile();
     generateSessionId();
     bindEvents();
+
+    // Tap the orb to start/stop voice call
+    const orbCanvas = document.getElementById('orb-canvas');
+    if (orbCanvas) {
+        orbCanvas.addEventListener('click', () => toggleVoiceCall());
+    }
 });
 
 function generateSessionId() {
@@ -224,6 +232,8 @@ async function handleSend() {
 // ===== BARCODE SCANNER =====
 let html5QrCode = null;
 let scannerRunning = false;
+let availableCameras = [];
+let activeCameraId = null;
 
 function openBarcodeModal() {
     openModal(els.barcodeModal);
@@ -241,7 +251,7 @@ function switchBarcodeTab(tab) {
         els.tabManual.classList.remove('active');
         els.barcodeCameraPanel.classList.remove('hidden');
         els.barcodeManualPanel.classList.add('hidden');
-        startScanner();
+        loadCamerasAndStart();
     } else {
         els.tabCamera.classList.remove('active');
         els.tabManual.classList.add('active');
@@ -252,8 +262,66 @@ function switchBarcodeTab(tab) {
     }
 }
 
-async function startScanner() {
-    if (scannerRunning || !window.Html5Qrcode) return;
+async function loadCamerasAndStart() {
+    if (!window.Html5Qrcode) return;
+
+    try {
+        availableCameras = await Html5Qrcode.getCameras();
+
+        if (availableCameras.length === 0) {
+            showCameraError('No cameras found — use manual entry');
+            return;
+        }
+
+        renderCameraSelector();
+
+        const backCam = availableCameras.find(c =>
+            /back|rear|environment/i.test(c.label)
+        );
+        activeCameraId = backCam ? backCam.id : availableCameras[availableCameras.length - 1].id;
+
+        const selector = document.getElementById('camera-selector');
+        if (selector) selector.value = activeCameraId;
+
+        await startScannerWithCamera(activeCameraId);
+    } catch (err) {
+        console.warn('Camera enumeration error:', err);
+        showCameraError('Camera access denied — use manual entry');
+    }
+}
+
+function renderCameraSelector() {
+    let selector = document.getElementById('camera-selector');
+
+    if (availableCameras.length <= 1) {
+        if (selector) selector.remove();
+        return;
+    }
+
+    if (!selector) {
+        selector = document.createElement('select');
+        selector.id = 'camera-selector';
+        selector.className = 'camera-selector';
+        const reader = document.getElementById('barcode-reader');
+        reader.parentNode.insertBefore(selector, reader);
+    }
+
+    selector.innerHTML = availableCameras.map(cam => {
+        const label = cam.label || `Camera ${availableCameras.indexOf(cam) + 1}`;
+        const shortLabel = label.length > 40 ? label.substring(0, 37) + '...' : label;
+        return `<option value="${cam.id}">${shortLabel}</option>`;
+    }).join('');
+
+    selector.onchange = async () => {
+        activeCameraId = selector.value;
+        await stopScanner();
+        await startScannerWithCamera(activeCameraId);
+    };
+}
+
+async function startScannerWithCamera(cameraId) {
+    if (scannerRunning) await stopScanner();
+    if (!window.Html5Qrcode) return;
 
     try {
         html5QrCode = new Html5Qrcode('barcode-reader');
@@ -272,23 +340,35 @@ async function startScanner() {
         };
 
         await html5QrCode.start(
-            { facingMode: 'environment' },
+            cameraId,
             config,
             onScanSuccess,
-            () => {} // ignore scan failures (no barcode in frame)
+            () => {}
         );
         scannerRunning = true;
-    } catch (err) {
-        console.warn('Camera scanner error:', err);
-        // Show hint to user
+
         const hint = els.barcodeCameraPanel.querySelector('.barcode-hint');
         if (hint) {
-            hint.textContent = 'Camera not available — use manual entry';
-            hint.style.color = 'var(--avoid-color, #e74c3c)';
+            hint.textContent = 'Point your camera at a barcode';
+            hint.style.color = '';
         }
-        // Auto-switch to manual tab
-        setTimeout(() => switchBarcodeTab('manual'), 1500);
+    } catch (err) {
+        console.warn('Camera start error:', err);
+        showCameraError('Camera failed to start — try another or use manual entry');
     }
+}
+
+function showCameraError(msg) {
+    const hint = els.barcodeCameraPanel.querySelector('.barcode-hint');
+    if (hint) {
+        hint.textContent = msg;
+        hint.style.color = 'var(--avoid-color, #e74c3c)';
+    }
+    setTimeout(() => switchBarcodeTab('manual'), 2000);
+}
+
+async function startScanner() {
+    await loadCamerasAndStart();
 }
 
 async function stopScanner() {
@@ -343,19 +423,80 @@ async function handleBarcode() {
     }
 }
 
-// ===== VOICE =====
+// ===== VOICE AGENT (TTS + STT) =====
 let recognition = null;
+let selectedVoice = null;
 
-function toggleVoice() {
+// Pick the best available voice
+function initVoice() {
+    const voices = speechSynthesis.getVoices();
+    // Prefer natural-sounding English voices
+    const preferred = ['Google UK English Female', 'Google US English', 'Samantha',
+        'Microsoft Zira', 'Microsoft Jenny', 'Karen', 'English Female'];
+    for (const name of preferred) {
+        const v = voices.find(v => v.name.includes(name));
+        if (v) { selectedVoice = v; break; }
+    }
+    if (!selectedVoice) {
+        selectedVoice = voices.find(v => v.lang.startsWith('en')) || voices[0];
+    }
+}
+
+// Load voices (they load async in Chrome)
+if (speechSynthesis.onvoiceschanged !== undefined) {
+    speechSynthesis.onvoiceschanged = initVoice;
+}
+initVoice();
+
+// --- TTS: Speak text aloud ---
+function speak(text, onDone) {
+    // Cancel any ongoing speech
+    speechSynthesis.cancel();
+
+    // Clean text for speech
+    const clean = text
+        .replace(/[🥗👋🔌📷⚠️]/g, '')
+        .replace(/<[^>]+>/g, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+
+    if (!clean) { if (onDone) onDone(); return; }
+
+    const utterance = new SpeechSynthesisUtterance(clean);
+    utterance.rate = 1.05;
+    utterance.pitch = 1.0;
+    utterance.volume = 1.0;
+    if (selectedVoice) utterance.voice = selectedVoice;
+
+    state.isSpeaking = true;
+    if (nutriOrb) nutriOrb.setState('speaking');
+
+    utterance.onend = () => {
+        state.isSpeaking = false;
+        if (onDone) onDone();
+    };
+
+    utterance.onerror = () => {
+        state.isSpeaking = false;
+        if (onDone) onDone();
+    };
+
+    speechSynthesis.speak(utterance);
+}
+
+function stopSpeaking() {
+    speechSynthesis.cancel();
+    state.isSpeaking = false;
+}
+
+// --- STT: Listen for voice input ---
+function startListening() {
     if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
         addMessage('assistant', 'Voice input isn\'t supported in this browser. Try Chrome!');
         return;
     }
 
-    if (state.isRecording) {
-        stopVoice();
-        return;
-    }
+    if (state.isRecording) return;
 
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     recognition = new SpeechRecognition();
@@ -366,40 +507,83 @@ function toggleVoice() {
     recognition.onstart = () => {
         state.isRecording = true;
         els.btnMic.classList.add('recording');
-        els.btnMic.querySelector('span').textContent = 'Stop';
+        els.btnMic.querySelector('span').textContent = 'Listening...';
         if (nutriOrb) nutriOrb.setState('listening');
     };
 
     recognition.onresult = (event) => {
         const transcript = event.results[0][0].transcript;
+        state.isRecording = false;
+        els.btnMic.classList.remove('recording');
+
+        // Show what user said
         els.textInput.value = transcript;
-        stopVoice();
         handleSend();
     };
 
     recognition.onerror = (event) => {
-        console.error('Speech error:', event.error);
-        stopVoice();
-        if (event.error === 'no-speech') {
-            addMessage('assistant', 'I didn\'t hear anything. Try again?');
+        console.warn('STT error:', event.error);
+        state.isRecording = false;
+        els.btnMic.classList.remove('recording');
+
+        if (event.error === 'no-speech' && state.voiceCallMode) {
+            // In call mode, just restart listening
+            setTimeout(() => startListening(), 300);
+        } else if (event.error === 'no-speech') {
+            if (nutriOrb) nutriOrb.setState('idle');
         }
     };
 
-    recognition.onend = () => stopVoice();
+    recognition.onend = () => {
+        state.isRecording = false;
+        els.btnMic.classList.remove('recording');
+    };
 
     recognition.start();
 }
 
-function stopVoice() {
+function stopListening() {
     state.isRecording = false;
     els.btnMic.classList.remove('recording');
     els.btnMic.querySelector('span').textContent = 'Voice';
     if (recognition) {
         try { recognition.stop(); } catch (e) { /* ignore */ }
     }
-    if (nutriOrb && nutriOrb.state === 'listening') {
-        nutriOrb.setState('idle');
+}
+
+// --- Voice Call Mode: continuous listen → process → speak → listen ---
+function toggleVoiceCall() {
+    if (state.voiceCallMode) {
+        // End call
+        state.voiceCallMode = false;
+        stopSpeaking();
+        stopListening();
+        els.btnMic.querySelector('span').textContent = 'Voice';
+        els.btnMic.classList.remove('recording', 'call-active');
+        if (nutriOrb) nutriOrb.setState('idle');
+        addMessage('assistant', 'Voice call ended. Tap the mic to start again!');
+        return;
     }
+
+    // Start call
+    state.voiceCallMode = true;
+    els.btnMic.classList.add('call-active');
+    els.btnMic.querySelector('span').textContent = 'End Call';
+
+    // Greeting
+    const greeting = state.userProfile.name
+        ? `Hi ${state.userProfile.name}! I'm listening — ask me about any food.`
+        : `Hi! I'm listening — ask me about any food.`;
+
+    addMessage('assistant', greeting);
+    speak(greeting, () => {
+        // After greeting, start listening
+        startListening();
+    });
+}
+
+function toggleVoice() {
+    toggleVoiceCall();
 }
 
 // ===== API CALL =====
@@ -431,17 +615,28 @@ function handleResponse(result) {
         showResponseCard(result);
     }
 
-    // Update orb
-    if (nutriOrb) {
-        const orbState = result.verdict ? result.verdict.verdict : 'idle';
-        nutriOrb.setState(orbState);
-        // Reset to idle after 5 seconds
-        setTimeout(() => {
-            if (nutriOrb.state === orbState && orbState !== 'idle') {
-                nutriOrb.setState('idle');
-            }
-        }, 5000);
-    }
+    // Speak the response (TTS)
+    speak(result.response_text, () => {
+        // After speaking, update orb to verdict state briefly
+        if (nutriOrb && result.verdict) {
+            nutriOrb.setState(result.verdict.verdict);
+            setTimeout(() => {
+                if (!state.isSpeaking && !state.isRecording) {
+                    if (state.voiceCallMode) {
+                        // In call mode: auto-listen again
+                        startListening();
+                    } else {
+                        nutriOrb.setState('idle');
+                    }
+                }
+            }, 2000);
+        } else if (state.voiceCallMode) {
+            // Non-verdict response in call mode: keep listening
+            startListening();
+        } else if (nutriOrb) {
+            nutriOrb.setState('idle');
+        }
+    });
 }
 
 function showResponseCard(result) {
@@ -468,8 +663,8 @@ function showResponseCard(result) {
         els.confidenceFill.style.width = confPct + '%';
     }, 50);
 
-    // Source
-    els.responseSource.textContent = `Source: ${result.intent || 'unknown'} · ${Math.round(result.latency_ms || 0)}ms`;
+    // Source (hidden — no latency display)
+    els.responseSource.textContent = '';
 
     // Show card with state class
     card.className = 'response-card ' + verdict.verdict;

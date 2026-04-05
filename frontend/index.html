@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Bite.ai — Your AI-powered voice food assistant. Scan, ask, and get instant nutritional verdicts.">
     <title>Bite.ai — AI Food Assistant</title>
+    <link rel="icon" type="image/png" href="logo.png">
+    <link rel="apple-touch-icon" href="logo.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -12,13 +14,11 @@
 </head>
 <body>
     <div id="app">
-        <!-- Ambient background -->
         <div class="ambient-bg"></div>
 
-        <!-- Header -->
         <header id="main-header">
             <div class="header-left">
-                <div class="logo-mark"></div>
+                <img src="logo.png" alt="Bite.ai" class="header-logo">
                 <h1><span class="brand-bite">Bite</span><span class="brand-ai">.ai</span></h1>
             </div>
             <nav class="header-nav">
@@ -26,27 +26,20 @@
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                     <span>Profile</span>
                 </button>
-                <button id="btn-history" class="nav-btn" title="History">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="10"/></svg>
-                    <span>History</span>
-                </button>
             </nav>
         </header>
 
-        <!-- Main Content -->
         <main id="main-content">
-            <!-- 3D Orb Section -->
             <section id="orb-section">
                 <canvas id="orb-canvas"></canvas>
                 <div id="orb-status" class="orb-status">
                     <span class="status-dot"></span>
                     <span class="status-text">Ready to assist</span>
                 </div>
+                <div class="powered-by">Powered by <strong>Oumi</strong></div>
             </section>
 
-            <!-- Interaction Area -->
             <section id="interaction-section">
-                <!-- Response Card -->
                 <div id="response-card" class="response-card hidden">
                     <div class="card-header">
                         <span id="response-product-name" class="product-name"></span>
@@ -65,7 +58,6 @@
                     <div id="response-source" class="response-source"></div>
                 </div>
 
-                <!-- Chat History -->
                 <div id="chat-history" class="chat-history">
                     <div class="chat-message assistant">
                         <div class="message-bubble">
@@ -74,7 +66,6 @@
                     </div>
                 </div>
 
-                <!-- Input Area -->
                 <div id="input-area" class="input-area">
                     <div class="input-wrapper">
                         <input
@@ -102,7 +93,6 @@
             </section>
         </main>
 
-        <!-- Profile Modal -->
         <div id="profile-modal" class="modal hidden">
             <div class="modal-backdrop"></div>
             <div class="modal-content">
@@ -111,20 +101,14 @@
                     <button id="btn-close-profile" class="modal-close">&times;</button>
                 </div>
                 <div class="modal-body">
-
-                    <!-- Q1: Name -->
                     <div class="form-group">
                         <label for="input-name">Name</label>
                         <input type="text" id="input-name" placeholder="e.g., Aisha" />
                     </div>
-
-                    <!-- Q2: Age -->
                     <div class="form-group">
                         <label for="input-age">Age</label>
                         <input type="number" id="input-age" placeholder="e.g., 25" min="1" max="120" />
                     </div>
-
-                    <!-- Q3: Dietary Preferences -->
                     <div class="form-group">
                         <label for="input-diet">Dietary Preferences</label>
                         <select id="input-diet">
@@ -133,8 +117,6 @@
                             <option value="non-vegetarian">Non-Vegetarian</option>
                         </select>
                     </div>
-
-                    <!-- Q4: Gender -->
                     <div class="form-group">
                         <label for="input-gender">Gender</label>
                         <select id="input-gender">
@@ -144,8 +126,6 @@
                             <option value="prefer-not-to-say">Prefer not to say</option>
                         </select>
                     </div>
-
-                    <!-- Q5: Allergies (multi-select checkboxes) -->
                     <div class="form-group">
                         <label>Allergies</label>
                         <div class="checkbox-group" id="allergy-options">
@@ -156,21 +136,15 @@
                             <label class="checkbox-label"><span>Soy Allergy</span><input type="checkbox" name="allergy" value="soy"></label>
                         </div>
                     </div>
-
-                    <!-- Q6: Health Conditions (dynamic based on gender, multi-select checkboxes) -->
                     <div class="form-group">
                         <label>Health Conditions</label>
-                        <div class="checkbox-group" id="condition-options">
-                            <!-- Injected dynamically by JS based on gender selection -->
-                        </div>
+                        <div class="checkbox-group" id="condition-options"></div>
                     </div>
-
                     <button id="btn-save-profile" class="btn-primary">Save Profile</button>
                 </div>
             </div>
         </div>
 
-        <!-- Barcode Modal -->
         <div id="barcode-modal" class="modal hidden">
             <div class="modal-backdrop"></div>
             <div class="modal-content barcode-modal-content">
@@ -179,7 +153,6 @@
                     <button id="btn-close-barcode" class="modal-close">&times;</button>
                 </div>
                 <div class="modal-body">
-                    <!-- Tab toggle -->
                     <div class="barcode-tabs">
                         <button id="tab-camera" class="barcode-tab active" data-tab="camera">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
@@ -190,14 +163,10 @@
                             Type
                         </button>
                     </div>
-
-                    <!-- Camera scanner -->
                     <div id="barcode-camera-panel" class="barcode-panel">
                         <div id="barcode-reader" class="barcode-reader"></div>
                         <p class="barcode-hint">Point your camera at a barcode</p>
                     </div>
-
-                    <!-- Manual entry -->
                     <div id="barcode-manual-panel" class="barcode-panel hidden">
                         <input type="text" id="input-barcode" class="barcode-input" placeholder="Enter 8-13 digit barcode" maxlength="13" />
                         <button id="btn-submit-barcode" class="btn-primary">Analyze Product</button>
@@ -206,6 +175,10 @@
             </div>
         </div>
     </div>
+
+    <footer class="app-footer">
+        <span>Bite.ai — Powered by <strong>Oumi</strong></span>
+    </footer>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>

@@ -10,7 +10,7 @@ class ResponseFormatter:
 
     CASUAL_RESPONSES = {
         "greeting": (
-            "Hey! I'm NutriAssist. Tell me a food or scan a barcode, "
+            "Hey! I'm Bite.ai. Tell me a food or scan a barcode, "
             "and I'll tell you if it's good for you!"
         ),
         "thanks": "You're welcome! Ask me about any food anytime.",
