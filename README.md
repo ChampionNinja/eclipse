@@ -28,7 +28,7 @@
 
 | Analysis Result | Profile Setup | Mobile View |
 |:--------------:|:-------------:|:-----------:|
-| [Result](screenshots/analysis_result.png) | [Profile](/profile.png) | [Mobile](screenshots/mobile.png) |
+| [Result](/analysis_result.png) | [Profile](/profile.png) | [Mobile](screenshots/mobile.png) |
 
 ---
 
