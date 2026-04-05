@@ -85,15 +85,15 @@
    (Templates primary + Ollama SLM fallback)
             │
             ▼
-   JSON Response → Browser TTS
+       Browser TTS
 ```
 
 ### Two-Agent Pipeline
 
 | Agent | Role | Technology | Latency |
 |-------|------|-----------|---------|
-| **Agent 1** — Analysis | Nutritional verdict (eat/avoid/sometimes) | Rule-based engine + Ollama SLM fallback | ~5ms (rules) / ~2s (SLM) |
-| **Agent 2** — Response | Natural language generation | Templates (primary) + Ollama SLM (fallback) | ~1ms (template) / ~3s (SLM) |
+| **Agent 1** — Analysis | Nutritional verdict (eat/avoid/sometimes) | Rule-based engine + Ollama SLM  | ~5ms (rules) / ~1.2s (SLM) |
+| **Agent 2** — Response | Natural language generation | Templates (primary) + Ollama SLM  | ~1ms (template) / ~1.3s (SLM) |
 
 ---
 
