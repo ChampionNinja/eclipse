@@ -1,36 +1,30 @@
-"""Product Analysis — SLM inference + rule-based fallback."""
+"""Agent 1 — Product Analysis: Rule-based primary + SLM fallback via Ollama."""
 
 import json
-import re
 import logging
 from typing import Optional
 
+import httpx
+
 logger = logging.getLogger(__name__)
 
-# Try importing torch/transformers — graceful fallback if not available
-try:
-    import torch
-    from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
-    from peft import PeftModel
-    HAS_TORCH = True
-except ImportError:
-    HAS_TORCH = False
-    logger.warning("torch/transformers not installed — using rule-based analysis only")
+OLLAMA_URL = "http://localhost:11434/api/generate"
 
-
-SYSTEM_PROMPT = (
+ANALYSIS_SYSTEM_PROMPT = (
     "You are a nutrition analysis engine. Given product data and user profile, "
     "output ONLY a valid JSON verdict.\nRules:\n"
     '- verdict: "eat" (healthy), "avoid" (unhealthy), "sometimes" (moderate)\n'
     "- reason: max 15 words, cite specific nutrients\n"
     "- confidence: 0.0-1.0 based on data completeness\n"
     '- If user has allergies matching ingredients, verdict MUST be "avoid"\n'
-    '- If data_confidence is "low", confidence must be <= 0.5'
+    '- If user is vegetarian/vegan and product contains meat/fish, verdict MUST be "avoid"\n'
+    "- Condition-specific flags (diabetes, hypertension, cholesterol) "
+    "must lower verdict if relevant nutrients are high"
 )
 
 
 class RuleBasedAnalyzer:
-    """Deterministic rule-based analyzer — no model needed."""
+    """Deterministic rule-based analyzer — no model needed. Primary engine."""
 
     ALLERGEN_KEYWORDS = {
         "milk": ["milk", "dairy", "cream", "butter", "cheese", "whey",
@@ -44,7 +38,15 @@ class RuleBasedAnalyzer:
         "eggs": ["egg", "omelette", "bhurji"],
         "soy": ["soy", "soybean", "soya", "tofu"],
         "shellfish": ["shrimp", "prawn", "crab", "lobster"],
+        "fish": ["fish", "tuna", "salmon", "sardine", "mackerel"],
     }
+
+    # Non-veg keywords for diet filtering
+    NON_VEG_KEYWORDS = [
+        "chicken", "mutton", "lamb", "pork", "beef", "meat", "fish",
+        "prawn", "shrimp", "crab", "lobster", "egg", "bacon", "ham",
+        "salami", "sausage", "pepperoni", "lard", "gelatin", "tallow",
+    ]
 
     def analyze(self, product: dict, user_profile: dict) -> dict:
         nut = product.get("nutriments", {})
@@ -63,7 +65,18 @@ class RuleBasedAnalyzer:
                         "confidence": 0.98,
                     }
 
-        # 2. Score nutrients
+        # 2. Diet check (vegetarian/vegan)
+        diet = user_profile.get("diet_type", "").lower()
+        if diet in ("vegetarian", "vegan"):
+            for kw in self.NON_VEG_KEYWORDS:
+                if kw in searchable:
+                    return {
+                        "verdict": "avoid",
+                        "reason": f"Contains {kw} — not suitable for {diet} diet",
+                        "confidence": 0.97,
+                    }
+
+        # 3. Score nutrients
         sugar = nut.get("sugars_100g")
         fat = nut.get("fat_100g")
         sat_fat = nut.get("saturated_fat_100g")
@@ -110,7 +123,7 @@ class RuleBasedAnalyzer:
 
         if fiber is not None:
             if fiber > 5: score += 2; reasons.append(f"high fiber ({fiber}g)")
-            elif fiber > 3: score += 1; reasons.append(f"good fiber")
+            elif fiber > 3: score += 1; reasons.append("good fiber")
 
         if calories is not None and calories < 80:
             score += 1; reasons.append("low calorie")
@@ -124,6 +137,8 @@ class RuleBasedAnalyzer:
         if "hypertension" in conditions and salt is not None and salt > 1.0:
             score -= 2; reasons.append("risky for hypertension")
         if "cholesterol" in conditions and sat_fat is not None and sat_fat > 5:
+            score -= 2; reasons.append("bad for cholesterol")
+        if "high_cholesterol" in conditions and sat_fat is not None and sat_fat > 5:
             score -= 2; reasons.append("bad for cholesterol")
         if goal == "weight_loss" and calories is not None and calories > 350:
             score -= 1
@@ -140,109 +155,76 @@ class RuleBasedAnalyzer:
         return {"verdict": verdict, "reason": reason, "confidence": round(base_conf, 2)}
 
 
-class SLMAnalyzer:
-    """Fine-tuned SLM analyzer. Falls back to rules if model unavailable."""
+class OllamaSLMAnalyzer:
+    """SLM fallback analyzer via Ollama — used when rule-based confidence is low."""
 
-    def __init__(self, model_path: Optional[str] = None, base_model: str = "Qwen/Qwen2.5-0.5B-Instruct"):
-        self.rule_analyzer = RuleBasedAnalyzer()
-        self.model = None
-        self.tokenizer = None
-        self._json_pattern = re.compile(r"\{[^{}]+\}")
+    def __init__(self, model: str = "qwen:0.5b", timeout: float = 8.0):
+        self.model = model
+        self.timeout = timeout
+        self._available: Optional[bool] = None
 
-        if model_path and HAS_TORCH:
-            self._load_model(base_model, model_path)
-
-    def _load_model(self, base_model: str, adapter_path: str):
+    async def is_available(self) -> bool:
+        if self._available is not None:
+            return self._available
         try:
-            logger.info(f"Loading SLM: {base_model} + {adapter_path}")
-            self.tokenizer = AutoTokenizer.from_pretrained(base_model, trust_remote_code=True)
+            async with httpx.AsyncClient(timeout=2.0) as client:
+                r = await client.get("http://localhost:11434/api/tags")
+                self._available = r.status_code == 200
+        except Exception:
+            self._available = False
+        return self._available
 
-            self.model = AutoModelForCausalLM.from_pretrained(
-                base_model,
-                torch_dtype=torch.float16,
-                device_map="auto",
-                trust_remote_code=True,
-                low_cpu_mem_usage=True,
-            )
-            self.model = PeftModel.from_pretrained(self.model, adapter_path)
-            self.model.eval()
-            logger.info("SLM loaded successfully")
-        except Exception as e:
-            logger.error(f"Failed to load SLM: {e}")
-            self.model = None
-            self.tokenizer = None
+    async def analyze(self, product: dict, user_profile: dict) -> Optional[dict]:
+        """SLM-based analysis via Ollama. Returns None if unavailable."""
+        if not await self.is_available():
+            return None
 
-    def analyze(self, product: dict, user_profile: dict) -> dict:
-        # If no model loaded, fall back to rules
-        if self.model is None or self.tokenizer is None:
-            return self.rule_analyzer.analyze(product, user_profile)
-
-        try:
-            return self._slm_analyze(product, user_profile)
-        except Exception as e:
-            logger.warning(f"SLM inference failed: {e}, falling back to rules")
-            return self.rule_analyzer.analyze(product, user_profile)
-
-    def _slm_analyze(self, product: dict, user_profile: dict) -> dict:
-        prompt = self._build_prompt(product, user_profile)
-
-        messages = [
-            {"role": "system", "content": SYSTEM_PROMPT},
-            {"role": "user", "content": prompt},
-        ]
-        text = self.tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
-        inputs = self.tokenizer(text, return_tensors="pt", truncation=True, max_length=450)
-        inputs = {k: v.to(self.model.device) for k, v in inputs.items()}
-
-        with torch.no_grad():
-            outputs = self.model.generate(
-                **inputs,
-                max_new_tokens=80,
-                temperature=0.1,
-                do_sample=False,
-                repetition_penalty=1.1,
-            )
-
-        generated = outputs[0][inputs["input_ids"].shape[1]:]
-        raw = self.tokenizer.decode(generated, skip_special_tokens=True)
-
-        return self._parse(raw)
-
-    def _build_prompt(self, product: dict, profile: dict) -> str:
         nut = product.get("nutriments", {})
 
         def fmt(key):
             v = nut.get(key)
-            return str(round(v, 1)) if v is not None else "not available"
+            return str(round(v, 1)) if v is not None else "N/A"
 
-        allergies = ", ".join(profile.get("allergies", [])) or "none"
-        conditions = ", ".join(profile.get("conditions", [])) or "none"
+        allergies = ", ".join(user_profile.get("allergies", [])) or "none"
+        conditions = ", ".join(user_profile.get("conditions", [])) or "none"
+        diet = user_profile.get("diet_type", "none") or "none"
 
-        return f"""[PRODUCT]
+        prompt = f"""[PRODUCT]
 Name: {product.get('product_name', 'Unknown')}
-Source: {product.get('source_type', 'inferred')}
-Data Confidence: {product.get('data_confidence', 'low')}
-Nutrients (per 100g):
-  Calories: {fmt('energy_kcal_100g')}
-  Fat: {fmt('fat_100g')}
-  Saturated Fat: {fmt('saturated_fat_100g')}
-  Sugar: {fmt('sugars_100g')}
-  Salt: {fmt('salt_100g')}
-  Protein: {fmt('proteins_100g')}
-  Fiber: {fmt('fiber_100g')}
-Ingredients: {product.get('ingredients', 'not available') or 'not available'}
+Nutrients per 100g: Cal={fmt('energy_kcal_100g')}, Fat={fmt('fat_100g')}, SatFat={fmt('saturated_fat_100g')}, Sugar={fmt('sugars_100g')}, Salt={fmt('salt_100g')}, Protein={fmt('proteins_100g')}, Fiber={fmt('fiber_100g')}
+Ingredients: {product.get('ingredients', 'N/A') or 'N/A'}
 
-[USER PROFILE]
-Allergies: {allergies}
-Conditions: {conditions}
-Diet: {profile.get('diet_type') or 'none'}
-Goal: {profile.get('goal') or 'none'}
+[USER] Allergies: {allergies} | Conditions: {conditions} | Diet: {diet}
 
-[OUTPUT] Respond with ONLY valid JSON:"""
+[OUTPUT] Valid JSON only:"""
 
-    def _parse(self, raw: str) -> dict:
         try:
-            match = self._json_pattern.search(raw)
+            async with httpx.AsyncClient(timeout=self.timeout) as client:
+                r = await client.post(
+                    OLLAMA_URL,
+                    json={
+                        "model": self.model,
+                        "system": ANALYSIS_SYSTEM_PROMPT,
+                        "prompt": prompt,
+                        "stream": False,
+                        "options": {
+                            "temperature": 0.1,
+                            "num_predict": 80,
+                        },
+                    },
+                )
+                if r.status_code == 200:
+                    raw = r.json().get("response", "")
+                    return self._parse(raw)
+        except Exception as e:
+            logger.warning(f"Ollama SLM analysis error: {e}")
+
+        return None
+
+    def _parse(self, raw: str) -> Optional[dict]:
+        import re
+        try:
+            match = re.search(r'\{[^{}]+\}', raw)
             if match:
                 result = json.loads(match.group())
                 if all(k in result for k in ["verdict", "reason", "confidence"]):
@@ -253,4 +235,31 @@ Goal: {profile.get('goal') or 'none'}
                     }
         except (json.JSONDecodeError, ValueError):
             pass
-        return {"verdict": "sometimes", "reason": "Analysis unavailable", "confidence": 0.3}
+        return None
+
+
+class HybridAnalyzer:
+    """Main analyzer: Rule-based primary, SLM fallback for low-confidence cases."""
+
+    def __init__(self, slm_model: str = "qwen:0.5b"):
+        self.rules = RuleBasedAnalyzer()
+        self.slm = OllamaSLMAnalyzer(model=slm_model)
+
+    async def analyze(self, product: dict, user_profile: dict) -> dict:
+        # Always run rule-based first (instant)
+        verdict = self.rules.analyze(product, user_profile)
+
+        # If rule-based is confident enough, use it directly
+        if verdict["confidence"] >= 0.7:
+            verdict["source"] = "rules"
+            return verdict
+
+        # Low confidence → try SLM fallback
+        slm_result = await self.slm.analyze(product, user_profile)
+        if slm_result:
+            slm_result["source"] = "slm"
+            return slm_result
+
+        # SLM failed → use rule-based anyway
+        verdict["source"] = "rules"
+        return verdict
