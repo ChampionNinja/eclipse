@@ -24,11 +24,11 @@
 
 | Home Screen | Voice Call Mode | Barcode Scanner |
 |:-----------:|:---------------:|:---------------:|
-| ![Home](/home.png) | ![Voice](/voice_call.png) | ![Barcode](/barcode_scanner.png) |
+| [Home](/home.png) | [Voice](/voice_call.png) | [Barcode](/barcode_scanner.png) |
 
 | Analysis Result | Profile Setup | Mobile View |
 |:--------------:|:-------------:|:-----------:|
-| ![Result](screenshots/analysis_result.png) | ![Profile](/profile.png) | ![Mobile](screenshots/mobile.png) |
+| [Result](screenshots/analysis_result.png) | [Profile](/profile.png) | [Mobile](screenshots/mobile.png) |
 
 ---
 
