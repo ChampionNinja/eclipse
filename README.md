@@ -36,7 +36,7 @@
 
 <!-- Add your demo video here -->
 
-[![Watch the Demo](screenshots/video_thumbnail.png)](https://your-video-link-here)
+[[Watch the Demo](https://www.youtube.com/playlist?list=PL6tiFuZ8NQQuWYiFOFMxbcHK5nShAFAkJ)]
 
 > *Click the thumbnail above to watch the full demo, or see the video file at [`demo/bite_ai_demo.mp4`](demo/bite_ai_demo.mp4)*
 
